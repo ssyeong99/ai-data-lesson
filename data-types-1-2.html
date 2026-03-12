@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>1-2 데이터의 종류 | 인공지능 기초 with 데이터 분석</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary: #3B6FE8;
+    --primary-light: #EEF3FF;
+    --primary-dark: #2451C7;
+    --accent: #FF6B35;
+    --accent-light: #FFF0EB;
+    --green: #2ECC71;
+    --green-light: #E8F8F0;
+    --red: #E74C3C;
+    --red-light: #FDECEA;
+    --yellow: #F1C40F;
+    --yellow-light: #FEFCE8;
+    --purple: #8B5CF6;
+    --purple-light: #F3F0FF;
+    --teal: #0EA5A0;
+    --teal-light: #EDFAFA;
+    --orange: #F97316;
+    --orange-light: #FFF7ED;
+    --text-primary: #1A1F36;
+    --text-secondary: #4A5568;
+    --text-muted: #9AA5B4;
+    --bg: #F7F8FC;
+    --card-bg: #FFFFFF;
+    --border: #E4E9F2;
+    --radius: 12px;
+    --shadow: 0 2px 12px rgba(59,111,232,0.08);
+    --shadow-md: 0 4px 20px rgba(59,111,232,0.12);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.7;
+  }/* ── MAIN ── */
+  .main { width: 100%; }
+  .content { max-width: 820px; margin: 0 auto; padding: 40px 40px 80px; }
+
+  /* ── BREADCRUMB ── */
+  .breadcrumb {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; color: var(--text-muted); margin-bottom: 24px;
+  }
+  .breadcrumb span { color: var(--primary); font-weight: 500; }
+
+  /* ── LESSON HEADER ── */
+  .lesson-header {
+    background: linear-gradient(135deg, #2D5BE3 0%, #5B8FFF 100%);
+    border-radius: 16px; padding: 32px 36px; color: white;
+    margin-bottom: 32px; position: relative; overflow: hidden;
+  }
+  .lesson-header::before {
+    content: ''; position: absolute; top: -40px; right: -40px;
+    width: 180px; height: 180px; border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+  }
+  .lesson-meta {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 12px; opacity: 0.85; margin-bottom: 10px;
+  }
+  .lesson-meta-badge {
+    background: rgba(255,255,255,0.2); border-radius: 20px;
+    padding: 3px 10px; font-weight: 500;
+  }
+  .lesson-title { font-size: 28px; font-weight: 700; margin-bottom: 6px; line-height: 1.3; }
+  .lesson-subtitle { font-size: 15px; opacity: 0.85; }
+
+  /* ── INTRO ── */
+  .intro-text {
+    background: var(--card-bg); border-radius: var(--radius);
+    padding: 22px 28px; border: 1px solid var(--border);
+    color: var(--text-secondary); font-size: 15px; line-height: 1.85;
+    margin-bottom: 28px;
+  }
+
+  /* ── SECTION TITLE ── */
+  .section-title {
+    font-size: 18px; font-weight: 700; color: var(--text-primary);
+    margin-bottom: 16px; display: flex; align-items: center; gap: 10px;
+    padding-bottom: 12px; border-bottom: 2px solid var(--primary-light);
+  }
+  .section-title-icon {
+    width: 32px; height: 32px; background: var(--primary-light);
+    border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px;
+  }
+
+  /* ── TWO COLUMN CARDS ── */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+
+  .type-card {
+    border-radius: var(--radius); border: 1.5px solid; padding: 22px 22px 18px;
+  }
+  .type-card.categorical { background: #FFF8F2; border-color: #FFCFAA; }
+  .type-card.numerical   { background: #F0FAF4; border-color: #A8E6C5; }
+
+  .type-card-header {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 15px; font-weight: 700; margin-bottom: 10px;
+  }
+  .type-card.categorical .type-card-header { color: #C05A1A; }
+  .type-card.numerical   .type-card-header { color: #1B8B4A; }
+
+  .type-card-icon {
+    width: 28px; height: 28px; border-radius: 7px;
+    display: flex; align-items: center; justify-content: center; font-size: 15px;
+  }
+  .type-card.categorical .type-card-icon { background: #FFE0CC; }
+  .type-card.numerical   .type-card-icon { background: #C3F0D4; }
+
+  .type-card-desc { font-size: 13.5px; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.65; }
+
+  .type-example-list { list-style: none; }
+  .type-example-list li {
+    font-size: 13px; color: var(--text-secondary);
+    padding: 3px 0; display: flex; align-items: flex-start; gap: 6px;
+  }
+  .type-example-list li::before { content: '•'; flex-shrink: 0; margin-top: 1px; }
+  .type-card.categorical .type-example-list li::before { color: #F97316; }
+  .type-card.numerical   .type-example-list li::before { color: var(--green); }
+
+  /* ── CAUTION BOX ── */
+  .caution-box {
+    background: var(--yellow-light); border: 1.5px solid #F6D860;
+    border-radius: var(--radius); padding: 18px 22px; margin-bottom: 28px;
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+  .caution-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+  .caution-title { font-size: 13px; font-weight: 700; color: #A07B00; margin-bottom: 6px; }
+  .caution-text  { font-size: 13.5px; color: #7A5C00; line-height: 1.75; }
+  .caution-key   { font-weight: 700; color: #8B6000; }
+
+  /* ── SUB TYPE GRID ── */
+  .four-col { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+
+  .sub-card {
+    border-radius: 10px; border: 1.5px solid; padding: 16px 16px 14px;
+  }
+  .sub-card.ordinal   { background: #FFF3E0; border-color: #FFCC80; }
+  .sub-card.nominal   { background: #FFF8F2; border-color: #FFCFAA; }
+  .sub-card.discrete  { background: #E8F5FD; border-color: #90CAF9; }
+  .sub-card.continuous{ background: #F0FAF4; border-color: #A8E6C5; }
+
+  .sub-card-badge {
+    font-size: 10px; font-weight: 700; padding: 2px 8px;
+    border-radius: 10px; margin-bottom: 8px; display: inline-block; letter-spacing: 0.3px;
+  }
+  .sub-card.ordinal    .sub-card-badge { background: #FFB74D; color: #5D3A00; }
+  .sub-card.nominal    .sub-card-badge { background: #FFA07A; color: #7A1500; }
+  .sub-card.discrete   .sub-card-badge { background: #64B5F6; color: #0D2B6E; }
+  .sub-card.continuous .sub-card-badge { background: #66BB6A; color: #0A3D12; }
+
+  .sub-card-title { font-size: 13.5px; font-weight: 700; margin-bottom: 6px; color: var(--text-primary); }
+  .sub-card-desc  { font-size: 12px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 8px; }
+  .sub-card-ex    { font-size: 11.5px; color: var(--text-muted); background: rgba(255,255,255,0.7); border-radius: 6px; padding: 5px 8px; }
+
+  /* ── TREE DIAGRAM ── */
+  .tree-wrap {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 24px 28px; margin-bottom: 28px;
+  }
+  .tree-root {
+    text-align: center; margin-bottom: 8px;
+  }
+  .tree-node {
+    display: inline-block; padding: 8px 20px; border-radius: 8px;
+    font-size: 13px; font-weight: 700; border: 2px solid;
+  }
+  .tree-node.root    { background: var(--primary-light); border-color: var(--primary); color: var(--primary); font-size: 14px; }
+  .tree-node.cat     { background: #FFF3E0; border-color: #FFCC80; color: #C05A1A; }
+  .tree-node.num     { background: var(--green-light); border-color: #A8E6C5; color: #1B8B4A; }
+  .tree-node.ord     { background: #FFF3E0; border-color: #FFCC80; color: #8B4500; font-size: 12px; }
+  .tree-node.nom     { background: #FFF8F2; border-color: #FFCFAA; color: #9A2E00; font-size: 12px; }
+  .tree-node.dis     { background: #E8F5FD; border-color: #90CAF9; color: #0D4A8B; font-size: 12px; }
+  .tree-node.con     { background: var(--green-light); border-color: #A8E6C5; color: #0A5C2A; font-size: 12px; }
+
+  .tree-row { display: flex; justify-content: center; gap: 32px; }
+  .tree-branch { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .tree-line-v { width: 2px; height: 20px; background: var(--border); }
+  .tree-line-h { position: relative; display: flex; justify-content: center; gap: 40px; }
+  .tree-sub-row { display: flex; justify-content: center; gap: 12px; }
+
+  /* ── PRACTICE BOX ── */
+  .practice-box {
+    border: 1.5px solid var(--border); border-radius: var(--radius);
+    overflow: hidden; margin-bottom: 28px;
+  }
+  .practice-header {
+    background: var(--text-primary); color: white;
+    padding: 14px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer; user-select: none;
+  }
+  .practice-header-left { display: flex; align-items: center; gap: 10px; }
+  .practice-badge {
+    background: var(--accent); color: white; font-size: 10px;
+    font-weight: 700; padding: 2px 8px; border-radius: 12px; letter-spacing: 0.5px;
+  }
+  .practice-badge.blue { background: var(--primary); }
+  .practice-title { font-size: 15px; font-weight: 600; }
+  .practice-toggle { font-size: 12px; opacity: 0.75; }
+  .practice-body { background: var(--card-bg); padding: 24px 28px; }
+  .practice-intro { font-size: 14px; color: var(--text-secondary); margin-bottom: 20px; }
+
+  /* ── DRAG AND DROP ── */
+  .dnd-section { margin-bottom: 0; }
+
+  .dnd-chips-label {
+    font-size: 12px; font-weight: 700; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.6px;
+    margin-bottom: 10px;
+  }
+
+  .dnd-chips {
+    display: flex; flex-wrap: wrap; gap: 9px;
+    min-height: 54px;
+    background: var(--bg); border: 2px dashed var(--border);
+    border-radius: 10px; padding: 12px 14px;
+    margin-bottom: 20px;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .dnd-chips.drag-over { border-color: var(--primary); background: var(--primary-light); }
+
+  .chip {
+    padding: 7px 14px; border-radius: 20px; font-size: 13px; font-weight: 500;
+    cursor: grab; border: 1.5px solid var(--border);
+    background: white; color: var(--text-secondary);
+    transition: all 0.15s; user-select: none;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .chip:hover { border-color: var(--primary); color: var(--primary); box-shadow: 0 2px 8px rgba(59,111,232,0.12); }
+  .chip.dragging { opacity: 0.4; cursor: grabbing; }
+  .chip.placed-cat { background: #FFF3E0; border-color: #FFCC80; color: #8B4500; }
+  .chip.placed-num { background: var(--green-light); border-color: #A8E6C5; color: #1B6B3A; }
+  .chip.placed-ord { background: #FFF3E0; border-color: #FFCC80; color: #8B4500; }
+  .chip.placed-nom { background: #FFF8F2; border-color: #FFCFAA; color: #9A2E00; }
+  .chip.placed-dis { background: #E8F5FD; border-color: #90CAF9; color: #0D4A8B; }
+  .chip.placed-con { background: var(--green-light); border-color: #A8E6C5; color: #0A5C2A; }
+
+  .dnd-zones { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .dnd-zones.four { grid-template-columns: 1fr 1fr 1fr 1fr; }
+
+  .drop-zone {
+    border-radius: 10px; border: 2px dashed; min-height: 100px;
+    padding: 14px 14px 10px;
+    transition: all 0.2s;
+  }
+  .drop-zone.cat-zone   { background: #FFFAF5; border-color: #FFCC80; }
+  .drop-zone.num-zone   { background: #F5FDF7; border-color: #A8E6C5; }
+  .drop-zone.ord-zone   { background: #FFFAF5; border-color: #FFCC80; }
+  .drop-zone.nom-zone   { background: #FFF8F2; border-color: #FFCFAA; }
+  .drop-zone.dis-zone   { background: #EDF6FE; border-color: #90CAF9; }
+  .drop-zone.con-zone   { background: #F5FDF7; border-color: #A8E6C5; }
+
+  .drop-zone.drag-over  { transform: scale(1.01); box-shadow: var(--shadow-md); }
+  .drop-zone.cat-zone.drag-over { border-color: #F97316; }
+  .drop-zone.num-zone.drag-over { border-color: var(--green); }
+
+  .drop-zone-label {
+    font-size: 11.5px; font-weight: 700; margin-bottom: 10px;
+    display: flex; align-items: center; gap: 6px;
+    padding-bottom: 8px; border-bottom: 1px solid;
+  }
+  .drop-zone.cat-zone .drop-zone-label { color: #C05A1A; border-color: #FFCC80; }
+  .drop-zone.num-zone .drop-zone-label { color: #1B8B4A; border-color: #A8E6C5; }
+  .drop-zone.ord-zone .drop-zone-label { color: #8B4500; border-color: #FFCC80; }
+  .drop-zone.nom-zone .drop-zone-label { color: #9A2E00; border-color: #FFCFAA; }
+  .drop-zone.dis-zone .drop-zone-label { color: #0D4A8B; border-color: #90CAF9; }
+  .drop-zone.con-zone .drop-zone-label { color: #0A5C2A; border-color: #A8E6C5; }
+
+  .drop-zone-chips { display: flex; flex-wrap: wrap; gap: 7px; min-height: 36px; }
+  .drop-zone-empty { font-size: 12px; color: var(--text-muted); font-style: italic; }
+
+  /* ── DND RESULT ── */
+  .dnd-result {
+    margin-top: 16px; padding: 14px 18px; border-radius: 10px;
+    font-size: 13.5px; font-weight: 500; display: none;
+    animation: fadeIn 0.3s ease;
+  }
+  .dnd-result.show { display: block; }
+  .dnd-result.correct { background: var(--green-light); color: #1B6B3A; border: 1px solid #A8E6C5; }
+  .dnd-result.partial { background: var(--yellow-light); color: #7A5800; border: 1px solid #F9E04B; }
+  .dnd-result.wrong   { background: var(--red-light); color: var(--red); border: 1px solid #FAD0CC; }
+
+  .check-btn {
+    margin-top: 14px; padding: 10px 24px; background: var(--primary);
+    color: white; border: none; border-radius: 8px; font-size: 13.5px;
+    font-weight: 600; cursor: pointer; font-family: 'Noto Sans KR', sans-serif;
+    transition: all 0.15s; display: flex; align-items: center; gap: 6px;
+  }
+  .check-btn:hover { background: var(--primary-dark); box-shadow: 0 4px 14px rgba(59,111,232,0.25); }
+
+  .reset-btn {
+    margin-top: 10px; padding: 8px 18px; background: var(--bg);
+    color: var(--text-secondary); border: 1.5px solid var(--border);
+    border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer;
+    font-family: 'Noto Sans KR', sans-serif; transition: all 0.15s;
+  }
+  .reset-btn:hover { background: var(--border); }
+
+  .btn-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+  /* ── SUMMARY ── */
+  .summary-box {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 26px 30px; margin-bottom: 24px;
+  }
+  .summary-title {
+    font-size: 15px; font-weight: 700; color: var(--text-primary);
+    margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+  }
+  .summary-title::before { content: ''; width: 4px; height: 18px; background: var(--primary); border-radius: 2px; }
+  .summary-list { list-style: none; }
+  .summary-list li {
+    font-size: 14px; color: var(--text-secondary); padding: 8px 0;
+    display: flex; align-items: flex-start; gap: 10px;
+    border-bottom: 1px dashed var(--border);
+  }
+  .summary-list li:last-child { border-bottom: none; }
+  .summary-list li::before { content: '✓'; color: var(--green); font-weight: 700; flex-shrink: 0; }
+
+  /* ── NAV ── */
+  .btn { padding: 12px 24px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'Noto Sans KR', sans-serif; transition: all 0.15s; display: flex; align-items: center; gap: 8px; border: none; }
+  .btn-secondary { background: var(--bg); color: var(--text-secondary); border: 1px solid var(--border); }
+  .btn-secondary:hover { background: var(--border); }
+  .btn-primary { background: var(--primary); color: white; }
+  .btn-primary:hover { background: var(--primary-dark); box-shadow: 0 4px 14px rgba(59,111,232,0.3); transform: translateY(-1px); }
+  .progress-bar-wrap { flex: 1; max-width: 200px; margin: 0 20px; background: var(--border); border-radius: 4px; height: 6px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: var(--primary); border-radius: 4px; width: 28%; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ── CORRECT/WRONG chip indicator ── */
+  .chip-indicator {
+    font-size: 11px; font-weight: 700; opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .chip-indicator.show { opacity: 1; }
+
+  /* ── TOPBAR ── */
+  .topbar {
+    position: sticky; top: 0; z-index: 200;
+    background: #fff; border-bottom: 1px solid var(--border);
+    padding: 0 32px; height: 52px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .topbar-home { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .topbar-logo-icon { width: 30px; height: 30px; background: linear-gradient(135deg, var(--primary), #6B9DFF); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+  .topbar-logo-text { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+  .topbar-back-btn { background: var(--primary-light); color: var(--primary); border: 1px solid #C5D5FF; border-radius: 8px; padding: 6px 14px; font-size: 13px; font-weight: 600; text-decoration: none; transition: all 0.15s; }
+  .topbar-back-btn:hover { background: var(--primary); color: white; }
+</style>
+</head>
+<body>
+
+<!-- ── SIDEBAR ── -->
+
+
+<!-- ── MAIN ── -->
+<header class="topbar">
+  <a class="topbar-home" href="index.html">
+    <div class="topbar-logo-icon">📊</div>
+    <div class="topbar-logo-text">인공지능 기초 with 데이터 분석</div>
+  </a>
+  <a class="topbar-back-btn" href="index.html">⌂ 메인으로</a>
+</header>
+<main class="main">
+  <div class="content">
+
+    <div class="breadcrumb">홈 › 데이터란 무엇인가 › <span>1-2 데이터의 종류</span></div>
+
+    <!-- LESSON HEADER -->
+    <div class="lesson-header">
+      <div class="lesson-meta">
+        <span class="lesson-meta-badge">📖 1단원 · 1-2</span>
+        <span>⏱ 20분</span>
+      </div>
+      <div class="lesson-title">데이터의 종류</div>
+      <div class="lesson-subtitle">범주형 vs 수치형 분류 연습</div>
+    </div>
+
+    <!-- INTRO -->
+    <div class="intro-text">
+      데이터에는 여러 <strong>종류</strong>가 있습니다. 종류에 따라 분석 방법이 달라지기 때문에, 데이터의 종류를 구분하는 것은 매우 중요합니다.
+    </div>
+
+    <!-- ─────────────────────────────────── -->
+    <!-- PART 1: 범주형 vs 수치형            -->
+    <!-- ─────────────────────────────────── -->
+    <div class="section-title">
+      <div class="section-title-icon">📂</div>
+      두 가지 큰 분류: 범주형 vs 수치형
+    </div>
+
+    <div class="two-col" style="margin-bottom:16px;">
+      <div class="type-card categorical">
+        <div class="type-card-header">
+          <div class="type-card-icon">🏷️</div>
+          범주형 데이터
+        </div>
+        <div class="type-card-desc">이름이나 그룹으로 분류되는 데이터. 숫자로 계산(평균, 합계)할 수 없습니다.</div>
+        <ul class="type-example-list">
+          <li>혈액형: A, B, O, AB</li>
+          <li>성별: 남, 여</li>
+          <li>좋아하는 과목: 국어, 수학, 영어</li>
+          <li>거주 지역: 서울, 부산, 인천</li>
+        </ul>
+      </div>
+      <div class="type-card numerical">
+        <div class="type-card-header">
+          <div class="type-card-icon">🔢</div>
+          수치형 데이터
+        </div>
+        <div class="type-card-desc">숫자로 표현되며, 계산(평균, 합계, 비교)이 가능한 데이터입니다.</div>
+        <ul class="type-example-list">
+          <li>키: 172cm, 165cm</li>
+          <li>시험 점수: 87점, 92점</li>
+          <li>기온: 25.3°C, -3°C</li>
+          <li>몸무게: 65kg, 58kg</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- CAUTION -->
+    <div class="caution-box">
+      <div class="caution-icon">⚠️</div>
+      <div>
+        <div class="caution-title">주의</div>
+        <div class="caution-text">
+          <span class="caution-key">숫자가 포함되어 있다고 반드시 수치형은 아닙니다.</span><br>
+          예를 들어 "학번 20250101"이나 "전화번호 010-1234-5678"은 숫자이지만 평균이나 합계를 구하는 게 의미가 없으므로 <strong>범주형</strong>입니다.<br>
+          <span class="caution-key">핵심 질문: "이 숫자들의 평균을 구하면 의미가 있는가?"</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRACTICE 1 -->
+    <div class="practice-box">
+      <div class="practice-header">
+        <div class="practice-header-left">
+          <span class="practice-badge">실습 1</span>
+          <span class="practice-title">범주형 vs 수치형 분류하기</span>
+        </div>
+        <span class="practice-toggle">▲ 접기</span>
+      </div>
+      <div class="practice-body">
+        <p class="practice-intro">아래 데이터 카드를 드래그하여 범주형 또는 수치형으로 분류하세요.</p>
+
+        <div class="dnd-chips-label">분류할 데이터 카드</div>
+        <div class="dnd-chips" id="chips1" ondragover="event.preventDefault(); this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="dropToSource(event,'chips1')">
+        </div>
+
+        <div class="dnd-zones">
+          <div class="drop-zone cat-zone" id="zone-cat" ondragover="allowDrop(event,'cat-zone')" ondragleave="leaveDrop(event,'cat-zone')" ondrop="dropToZone(event,'cat','chips1')">
+            <div class="drop-zone-label">🏷️ 범주형 데이터</div>
+            <div class="drop-zone-chips" id="zone-cat-chips"><span class="drop-zone-empty">여기에 드래그하세요</span></div>
+          </div>
+          <div class="drop-zone num-zone" id="zone-num" ondragover="allowDrop(event,'num-zone')" ondragleave="leaveDrop(event,'num-zone')" ondrop="dropToZone(event,'num','chips1')">
+            <div class="drop-zone-label">🔢 수치형 데이터</div>
+            <div class="drop-zone-chips" id="zone-num-chips"><span class="drop-zone-empty">여기에 드래그하세요</span></div>
+          </div>
+        </div>
+
+        <div class="btn-row" style="margin-top:16px;">
+          <button class="check-btn" onclick="checkDnd1()">✅ 정답 확인</button>
+          <button class="reset-btn" onclick="resetDnd1()">↺ 다시 시작</button>
+        </div>
+        <div class="dnd-result" id="dnd1-result"></div>
+      </div>
+    </div>
+
+    <!-- ─────────────────────────────────── -->
+    <!-- PART 2: 세부 종류                  -->
+    <!-- ─────────────────────────────────── -->
+    <div class="section-title" style="margin-top:8px;">
+      <div class="section-title-icon">🔬</div>
+      더 자세한 분류
+    </div>
+
+    <!-- TREE -->
+    <div class="tree-wrap">
+      <div class="tree-root"><span class="tree-node root">데이터</span></div>
+      <div style="display:flex;justify-content:center;gap:0;"><div style="display:flex;gap:160px;"><div style="width:2px;height:22px;background:var(--border);"></div><div style="width:2px;height:22px;background:var(--border);"></div></div></div>
+      <div class="tree-row" style="margin-bottom:0;">
+        <div class="tree-branch">
+          <span class="tree-node cat">🏷️ 범주형</span>
+          <div style="display:flex;gap:50px;"><div style="width:2px;height:18px;background:var(--border);"></div><div style="width:2px;height:18px;background:var(--border);"></div></div>
+          <div style="display:flex;gap:12px;">
+            <span class="tree-node ord">순서/순위형</span>
+            <span class="tree-node nom">명목형</span>
+          </div>
+        </div>
+        <div class="tree-branch">
+          <span class="tree-node num">🔢 수치형</span>
+          <div style="display:flex;gap:50px;"><div style="width:2px;height:18px;background:var(--border);"></div><div style="width:2px;height:18px;background:var(--border);"></div></div>
+          <div style="display:flex;gap:12px;">
+            <span class="tree-node dis">이산형</span>
+            <span class="tree-node con">연속형</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOUR CARDS -->
+    <div class="four-col">
+      <div class="sub-card ordinal">
+        <span class="sub-card-badge">순서/순위형</span>
+        <div class="sub-card-title">Ordinal</div>
+        <div class="sub-card-desc">데이터값 사이에 <strong>순서(순위)가 있는</strong> 범주형 데이터</div>
+        <div class="sub-card-ex">예) 등급 1·2·3등급<br>학점 A·B·C·D<br>만족도 매우좋음·좋음·보통</div>
+      </div>
+      <div class="sub-card nominal">
+        <span class="sub-card-badge">명목형</span>
+        <div class="sub-card-title">Nominal</div>
+        <div class="sub-card-desc">데이터값 사이에 <strong>순서가 없는</strong> 범주형 데이터</div>
+        <div class="sub-card-ex">예) 성별: 남/여<br>지역: 서울/부산/제주<br>혈액형: A/B/O/AB</div>
+      </div>
+      <div class="sub-card discrete">
+        <span class="sub-card-badge">이산형</span>
+        <div class="sub-card-title">Discrete</div>
+        <div class="sub-card-desc">값 사이에 <strong>끊어짐이 있는</strong> 수치형 데이터 (정수)</div>
+        <div class="sub-card-ex">예) 불량품 수: 0,1,2,3<br>판매 수량<br>학급 인원 수</div>
+      </div>
+      <div class="sub-card continuous">
+        <span class="sub-card-badge">연속형</span>
+        <div class="sub-card-title">Continuous</div>
+        <div class="sub-card-desc">값 사이에 <strong>끊어짐이 없는</strong> 수치형 데이터 (소수 가능)</div>
+        <div class="sub-card-ex">예) 키: 172.3cm<br>몸무게, 시간<br>기온, 매출액</div>
+      </div>
+    </div>
+
+    <!-- PRACTICE 2 -->
+    <div class="practice-box" style="margin-top:20px;">
+      <div class="practice-header">
+        <div class="practice-header-left">
+          <span class="practice-badge blue">실습 2</span>
+          <span class="practice-title">세부 종류 분류하기 (4분류)</span>
+        </div>
+        <span class="practice-toggle">▲ 접기</span>
+      </div>
+      <div class="practice-body">
+        <p class="practice-intro">각 데이터가 어느 세부 종류에 속하는지 드래그해서 분류해보세요.</p>
+
+        <div class="dnd-chips-label">분류할 데이터 카드</div>
+        <div class="dnd-chips" id="chips2" ondragover="event.preventDefault(); this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="dropToSource(event,'chips2')">
+        </div>
+
+        <div class="dnd-zones four">
+          <div class="drop-zone ord-zone" ondragover="allowDrop(event,'ord-zone')" ondragleave="leaveDrop(event,'ord-zone')" ondrop="dropToZone(event,'ord','chips2')">
+            <div class="drop-zone-label">🏅 순서/순위형</div>
+            <div class="drop-zone-chips" id="zone-ord-chips"><span class="drop-zone-empty">여기에 드래그</span></div>
+          </div>
+          <div class="drop-zone nom-zone" ondragover="allowDrop(event,'nom-zone')" ondragleave="leaveDrop(event,'nom-zone')" ondrop="dropToZone(event,'nom','chips2')">
+            <div class="drop-zone-label">🏷️ 명목형</div>
+            <div class="drop-zone-chips" id="zone-nom-chips"><span class="drop-zone-empty">여기에 드래그</span></div>
+          </div>
+          <div class="drop-zone dis-zone" ondragover="allowDrop(event,'dis-zone')" ondragleave="leaveDrop(event,'dis-zone')" ondrop="dropToZone(event,'dis','chips2')">
+            <div class="drop-zone-label">🔢 이산형</div>
+            <div class="drop-zone-chips" id="zone-dis-chips"><span class="drop-zone-empty">여기에 드래그</span></div>
+          </div>
+          <div class="drop-zone con-zone" ondragover="allowDrop(event,'con-zone')" ondragleave="leaveDrop(event,'con-zone')" ondrop="dropToZone(event,'con','chips2')">
+            <div class="drop-zone-label">📈 연속형</div>
+            <div class="drop-zone-chips" id="zone-con-chips"><span class="drop-zone-empty">여기에 드래그</span></div>
+          </div>
+        </div>
+
+        <div class="btn-row" style="margin-top:16px;">
+          <button class="check-btn" onclick="checkDnd2()">✅ 정답 확인</button>
+          <button class="reset-btn" onclick="resetDnd2()">↺ 다시 시작</button>
+        </div>
+        <div class="dnd-result" id="dnd2-result"></div>
+      </div>
+    </div>
+
+    <!-- SUMMARY -->
+    <div class="summary-box">
+      <div class="summary-title">이번 레슨에서 배운 것</div>
+      <ul class="summary-list">
+        <li><strong>범주형 데이터</strong>: 이름·그룹으로 분류, 계산 불가 → 순서형 / 명목형</li>
+        <li><strong>수치형 데이터</strong>: 숫자로 표현, 계산 가능 → 이산형 / 연속형</li>
+        <li><strong>주의:</strong> 숫자처럼 보여도 평균이 무의미하면 범주형 (학번, 전화번호)</li>
+        <li><strong>분류 기준:</strong> "계산이 의미 있는가?" → 수치형 / "순서가 있는가?" → 순서형</li>
+      </ul>
+    </div>
+
+    <!-- NAV -->
+    <div class="nav-buttons">
+      <button class="btn btn-secondary" onclick="location.href='data-analysis-site.html'">← 이전 레슨</button>
+      <div style="display:flex;align-items:center;gap:12px;color:var(--text-muted);font-size:12px;">
+        <span>2 / 7</span>
+        <div class="progress-bar-wrap"><div class="progress-bar-fill"></div></div>
+        <span>28% 완료</span>
+      </div>
+      <button class="btn btn-primary" onclick="location.href='data-quality-1-3.html'">다음 레슨 →</button>
+    </div>
+
+  </div>
+</main>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────
+const chips1Data = [
+  { id: 'c1_1', label: '키 (172cm)',         answer: 'num' },
+  { id: 'c1_2', label: '혈액형 (A형)',        answer: 'cat' },
+  { id: 'c1_3', label: '기온 (25.3°C)',       answer: 'num' },
+  { id: 'c1_4', label: '성별 (남/여)',         answer: 'cat' },
+  { id: 'c1_5', label: '시험 점수 (87점)',     answer: 'num' },
+  { id: 'c1_6', label: '학년 (2학년)',         answer: 'cat' },
+  { id: 'c1_7', label: '몸무게 (65kg)',        answer: 'num' },
+  { id: 'c1_8', label: '만족도 (매우 좋음)',   answer: 'cat' },
+  { id: 'c1_9', label: '거주 지역 (서울)',     answer: 'cat' },
+  { id: 'c1_10',label: '하루 걸음 수',         answer: 'num' },
+];
+
+const chips2Data = [
+  { id: 'c2_1', label: '성적 등급 (1~9등급)', answer: 'ord' },
+  { id: 'c2_2', label: '혈액형 (A/B/O/AB)',   answer: 'nom' },
+  { id: 'c2_3', label: '학급 학생 수 (30명)', answer: 'dis' },
+  { id: 'c2_4', label: '키 (172.3cm)',         answer: 'con' },
+  { id: 'c2_5', label: '만족도 (상/중/하)',    answer: 'ord' },
+  { id: 'c2_6', label: '거주 지역',            answer: 'nom' },
+  { id: 'c2_7', label: '불량품 수 (3개)',      answer: 'dis' },
+  { id: 'c2_8', label: '몸무게 (65.2kg)',      answer: 'con' },
+  { id: 'c2_9', label: '학점 (A/B/C/D)',       answer: 'ord' },
+  { id: 'c2_10',label: '좋아하는 색깔',        answer: 'nom' },
+  { id: 'c2_11',label: '하루 판매 수량',       answer: 'dis' },
+  { id: 'c2_12',label: '기온 (25.3°C)',        answer: 'con' },
+];
+
+// ── STATE ──────────────────────────────────────────────────────────────
+let draggingId = null;
+let chipSets = {
+  chips1: { data: chips1Data, zones: { cat: [], num: [] } },
+  chips2: { data: chips2Data, zones: { ord: [], nom: [], dis: [], con: [] } },
+};
+
+// ── INIT ───────────────────────────────────────────────────────────────
+function initChips(setId) {
+  const state = chipSets[setId];
+  const container = document.getElementById(setId);
+  container.innerHTML = '';
+  state.zones = Object.fromEntries(Object.keys(state.zones).map(k => [k, []]));
+
+  ['cat','num','ord','nom','dis','con'].forEach(zone => {
+    const el = document.getElementById('zone-' + zone + '-chips');
+    if (el) el.innerHTML = '<span class="drop-zone-empty">여기에 드래그하세요</span>';
+  });
+
+  state.data.forEach(chip => {
+    container.appendChild(createChip(chip.id, chip.label, ''));
+  });
+}
+
+function createChip(id, label, placedClass) {
+  const el = document.createElement('div');
+  el.className = 'chip' + (placedClass ? ' ' + placedClass : '');
+  el.id = 'chip-' + id;
+  el.draggable = true;
+  el.textContent = label;
+  el.dataset.chipId = id;
+  el.addEventListener('dragstart', e => {
+    draggingId = id;
+    setTimeout(() => el.classList.add('dragging'), 0);
+  });
+  el.addEventListener('dragend', () => {
+    el.classList.remove('dragging');
+    draggingId = null;
+  });
+  return el;
+}
+
+function allowDrop(e, zoneClass) {
+  e.preventDefault();
+  document.querySelector('.' + zoneClass).classList.add('drag-over');
+}
+function leaveDrop(e, zoneClass) {
+  document.querySelector('.' + zoneClass).classList.remove('drag-over');
+}
+
+function dropToZone(e, zoneName, setId) {
+  e.preventDefault();
+  document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('drag-over'));
+  if (!draggingId) return;
+
+  const state = chipSets[setId];
+  const chip = state.data.find(c => c.id === draggingId);
+  if (!chip) return;
+
+  // remove from wherever it currently lives
+  removeChipFromAll(draggingId, setId);
+
+  // add to zone
+  state.zones[zoneName].push(draggingId);
+  updateZoneUI(zoneName, setId);
+  updateSourceUI(setId);
+}
+
+function dropToSource(e, setId) {
+  e.preventDefault();
+  document.getElementById(setId).classList.remove('drag-over');
+  if (!draggingId) return;
+
+  removeChipFromAll(draggingId, setId);
+  updateSourceUI(setId);
+  ['cat','num','ord','nom','dis','con'].forEach(z => updateZoneUI(z, setId));
+}
+
+function removeChipFromAll(chipId, setId) {
+  const state = chipSets[setId];
+  Object.keys(state.zones).forEach(z => {
+    state.zones[z] = state.zones[z].filter(id => id !== chipId);
+  });
+}
+
+function updateZoneUI(zoneName, setId) {
+  const el = document.getElementById('zone-' + zoneName + '-chips');
+  if (!el) return;
+  const state = chipSets[setId];
+  const ids = state.zones[zoneName] || [];
+
+  el.innerHTML = '';
+  if (ids.length === 0) {
+    el.innerHTML = '<span class="drop-zone-empty">여기에 드래그하세요</span>';
+  } else {
+    ids.forEach(id => {
+      const chip = state.data.find(c => c.id === id);
+      if (chip) el.appendChild(createChip(id, chip.label, 'placed-' + zoneName));
+    });
+  }
+}
+
+function updateSourceUI(setId) {
+  const state = chipSets[setId];
+  const placedAll = Object.values(state.zones).flat();
+  const container = document.getElementById(setId);
+  container.innerHTML = '';
+  state.data.forEach(chip => {
+    if (!placedAll.includes(chip.id)) {
+      container.appendChild(createChip(chip.id, chip.label, ''));
+    }
+  });
+  if (container.children.length === 0) {
+    container.innerHTML = '<span style="font-size:13px;color:var(--text-muted);font-style:italic;">모든 카드를 분류했습니다 👍</span>';
+  }
+}
+
+// ── CHECK ──────────────────────────────────────────────────────────────
+function checkDnd(setId, resultId) {
+  const state = chipSets[setId];
+  const allPlaced = Object.values(state.zones).flat();
+  if (allPlaced.length < state.data.length) {
+    const r = document.getElementById(resultId);
+    r.textContent = '⚠️ 아직 분류하지 않은 카드가 있어요! 모든 카드를 배치한 뒤 확인해보세요.';
+    r.className = 'dnd-result show partial';
+    return;
+  }
+
+  let correct = 0;
+  state.data.forEach(chip => {
+    const placed = Object.keys(state.zones).find(z => state.zones[z].includes(chip.id));
+    if (placed === chip.answer) correct++;
+  });
+
+  const total = state.data.length;
+  const r = document.getElementById(resultId);
+
+  if (correct === total) {
+    r.innerHTML = `✅ 완벽합니다! ${total}개 모두 정확하게 분류했어요! 🎉`;
+    r.className = 'dnd-result show correct';
+  } else if (correct >= Math.ceil(total * 0.7)) {
+    r.innerHTML = `🟡 ${total}개 중 <strong>${correct}개</strong> 정답! 틀린 카드를 다시 확인해볼까요?`;
+    r.className = 'dnd-result show partial';
+    highlightWrong(setId);
+  } else {
+    r.innerHTML = `❌ ${total}개 중 <strong>${correct}개</strong> 정답. 각 유형의 정의를 다시 읽고 도전해보세요!`;
+    r.className = 'dnd-result show wrong';
+    highlightWrong(setId);
+  }
+}
+
+function highlightWrong(setId) {
+  const state = chipSets[setId];
+  state.data.forEach(chip => {
+    const placed = Object.keys(state.zones).find(z => state.zones[z].includes(chip.id));
+    const el = document.getElementById('chip-' + chip.id);
+    if (!el) return;
+    if (placed !== chip.answer) {
+      el.style.outline = '2px solid var(--red)';
+      el.title = '오답! 정답: ' + chip.answer;
+    } else {
+      el.style.outline = '2px solid var(--green)';
+    }
+  });
+}
+
+function checkDnd1() { checkDnd('chips1', 'dnd1-result'); }
+function checkDnd2() { checkDnd('chips2', 'dnd2-result'); }
+function resetDnd1() {
+  document.getElementById('dnd1-result').className = 'dnd-result';
+  chipSets.chips1.zones = { cat: [], num: [] };
+  initChips('chips1');
+}
+function resetDnd2() {
+  document.getElementById('dnd2-result').className = 'dnd-result';
+  chipSets.chips2.zones = { ord: [], nom: [], dis: [], con: [] };
+  initChips('chips2');
+}
+
+// ── START ──────────────────────────────────────────────────────────────
+initChips('chips1');
+initChips('chips2');
+</script>
+</body>
+</html>

@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2-3 좋은 질문의 조건 | 인공지능 기초 with 데이터 분석</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary: #3B6FE8;
+    --primary-light: #EEF3FF;
+    --primary-dark: #2451C7;
+    --accent: #FF6B35;
+    --accent-light: #FFF0EB;
+    --green: #2ECC71;
+    --green-light: #E8F8F0;
+    --red: #E74C3C;
+    --red-light: #FDECEA;
+    --yellow: #F1C40F;
+    --yellow-light: #FEFCE8;
+    --text-primary: #1A1F36;
+    --text-secondary: #4A5568;
+    --text-muted: #9AA5B4;
+    --bg: #F7F8FC;
+    --card-bg: #FFFFFF;
+    --border: #E4E9F2;
+    --radius: 12px;
+    --shadow: 0 2px 12px rgba(59,111,232,0.08);
+    --shadow-md: 0 4px 20px rgba(59,111,232,0.12);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: var(--text-primary); min-height: 100vh; font-size: 15px; line-height: 1.7; }
+
+  /* ── TOPBAR ── */
+  .topbar { position: sticky; top: 0; z-index: 200; background: #fff; border-bottom: 1px solid var(--border); padding: 0 32px; height: 52px; display: flex; align-items: center; justify-content: space-between; }
+  .topbar-home { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .topbar-logo-icon { width: 30px; height: 30px; background: linear-gradient(135deg, var(--primary), #6B9DFF); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+  .topbar-logo-text { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+  .topbar-back-btn { background: var(--primary-light); color: var(--primary); border: 1px solid #C5D5FF; border-radius: 8px; padding: 6px 14px; font-size: 13px; font-weight: 600; text-decoration: none; transition: all 0.15s; }
+  .topbar-back-btn:hover { background: var(--primary); color: white; }
+
+  /* ── MAIN ── */
+  .main { width: 100%; }
+  .content { max-width: 820px; margin: 0 auto; padding: 40px 40px 80px; }
+
+  .breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); margin-bottom: 24px; }
+  .breadcrumb span { color: var(--accent); font-weight: 500; }
+
+  /* ── LESSON HEADER ── */
+  .lesson-header { background: linear-gradient(135deg, #C0410A 0%, #FF7A3D 100%); border-radius: 16px; padding: 32px 36px; color: white; margin-bottom: 32px; position: relative; overflow: hidden; }
+  .lesson-header::before { content: ''; position: absolute; top: -40px; right: -40px; width: 180px; height: 180px; border-radius: 50%; background: rgba(255,255,255,0.06); }
+  .lesson-meta { display: flex; align-items: center; gap: 10px; font-size: 12px; opacity: 0.85; margin-bottom: 10px; }
+  .lesson-meta-badge { background: rgba(255,255,255,0.2); border-radius: 20px; padding: 3px 10px; font-weight: 500; }
+  .lesson-title { font-size: 28px; font-weight: 700; margin-bottom: 6px; }
+  .lesson-subtitle { font-size: 15px; opacity: 0.85; }
+
+  /* ── INTRO ── */
+  .intro-text { background: var(--card-bg); border-radius: var(--radius); padding: 22px 28px; border: 1px solid var(--border); color: var(--text-secondary); font-size: 15px; line-height: 1.85; margin-bottom: 28px; }
+
+  /* ── SECTION TITLE ── */
+  .section-title { font-size: 18px; font-weight: 700; color: var(--text-primary); margin-bottom: 18px; display: flex; align-items: center; gap: 10px; padding-bottom: 12px; border-bottom: 2px solid #FFE4D6; }
+  .section-title-icon { width: 32px; height: 32px; background: var(--accent-light); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+
+  /* ── CHECKPOINT CARDS ── */
+  .checkpoint-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+  .checkpoint-card { background: var(--card-bg); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 18px 14px; text-align: center; }
+  .checkpoint-icon { font-size: 26px; margin-bottom: 8px; }
+  .checkpoint-title { font-size: 13px; font-weight: 700; color: var(--text-primary); line-height: 1.4; }
+
+  /* ── NOTE BOX ── */
+  .note-box { background: var(--primary-light); border: 1.5px solid #C5D5FF; border-radius: var(--radius); padding: 16px 22px; margin-bottom: 28px; display: flex; gap: 10px; align-items: flex-start; }
+  .note-label { background: var(--primary); color: white; font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 6px; flex-shrink: 0; margin-top: 2px; }
+  .note-text { font-size: 13.5px; color: var(--text-secondary); line-height: 1.75; }
+
+  /* ── PRACTICE BOX ── */
+  .practice-box { border: 1.5px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 28px; }
+  .practice-header { background: var(--text-primary); color: white; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; }
+  .practice-header-left { display: flex; align-items: center; gap: 10px; }
+  .practice-badge { background: var(--accent); color: white; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 12px; }
+  .practice-title-text { font-size: 15px; font-weight: 600; }
+  .practice-toggle { font-size: 12px; opacity: 0.75; }
+  .practice-
+  .practice-intro { font-size: 14px; color: var(--text-secondary); margin-bottom: 22px; line-height: 1.7; }
+
+  /* ── EVAL QUESTIONS ── */
+  .eval-item { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 20px 22px; margin-bottom: 16px; }
+  .eval-item:last-child { margin-bottom: 0; }
+
+  .eval-num-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .eval-num { width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: white; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .eval-question { font-size: 14.5px; font-weight: 600; color: var(--text-primary); line-height: 1.55; }
+
+  .eval-checks { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+  .eval-check { display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 7px 12px; border-radius: 8px; border: 1.5px solid var(--border); background: white; transition: all 0.15s; user-select: none; font-size: 12.5px; color: var(--text-secondary); font-weight: 500; }
+  .eval-check:hover { border-color: var(--accent); }
+  .eval-check.checked { background: var(--accent-light); border-color: var(--accent); color: #C05A1A; font-weight: 600; }
+  .eval-check input { display: none; }
+
+  .eval-submit { padding: 9px 20px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'Noto Sans KR', sans-serif; transition: all 0.15s; }
+  .eval-submit:hover { background: var(--primary-dark); }
+
+  .eval-result { margin-top: 12px; padding: 14px 18px; border-radius: 8px; font-size: 13.5px; display: none; animation: fadeIn 0.3s ease; }
+  .eval-result.show { display: block; }
+  .eval-result.perfect  { background: var(--green-light); border: 1px solid #A8E6C5; color: #1B6B3A; }
+  .eval-result.partial  { background: var(--yellow-light); border: 1px solid #F9E04B; color: #7A5800; }
+  .eval-result.bad      { background: var(--red-light); border: 1px solid #FAD0CC; color: var(--red); }
+
+  .eval-result-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+  .eval-result-desc  { font-size: 13px; line-height: 1.7; margin-bottom: 8px; }
+  .eval-result-answer { font-size: 12px; color: inherit; opacity: 0.75; font-weight: 500; }
+
+  /* ── TIPS ── */
+  .tips-grid { display: flex; flex-direction: column; gap: 14px; margin-bottom: 28px; }
+  .tip-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .tip-card-header { background: var(--text-primary); color: white; padding: 10px 20px; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .tip-badge { background: var(--accent); color: white; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
+  .tip-
+  .tip-col { border-radius: 8px; padding: 12px 14px; }
+  .tip-col.bad  { background: var(--red-light); }
+  .tip-col.good { background: var(--green-light); }
+  .tip-col-label { font-size: 10px; font-weight: 700; margin-bottom: 6px; }
+  .tip-col.bad  .tip-col-label { color: var(--red); }
+  .tip-col.good .tip-col-label { color: #1B8B4A; }
+  .tip-col-text { font-size: 13px; line-height: 1.6; }
+  .tip-col.bad  .tip-col-text { color: #A04040; }
+  .tip-col.good .tip-col-text { color: #1B6B3A; }
+
+  /* ── SUMMARY ── */
+  .summary-box { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 26px 30px; margin-bottom: 24px; }
+  .summary-title { font-size: 15px; font-weight: 700; color: var(--text-primary); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .summary-title::before { content: ''; width: 4px; height: 18px; background: var(--accent); border-radius: 2px; }
+  .summary-list { list-style: none; }
+  .summary-list li { font-size: 14px; color: var(--text-secondary); padding: 8px 0; display: flex; align-items: flex-start; gap: 10px; border-bottom: 1px dashed var(--border); }
+  .summary-list li:last-child { border-bottom: none; }
+  .summary-list li::before { content: '✓'; color: var(--green); font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+
+  /* ── NAV ── */
+  .btn { padding: 12px 24px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'Noto Sans KR', sans-serif; transition: all 0.15s; display: flex; align-items: center; gap: 8px; border: none; }
+  .btn-secondary { background: var(--bg); color: var(--text-secondary); border: 1px solid var(--border); }
+  .btn-secondary:hover { background: var(--border); }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: #E85A20; box-shadow: 0 4px 14px rgba(255,107,53,0.3); transform: translateY(-1px); }
+  .progress-bar-wrap { flex: 1; max-width: 200px; margin: 0 20px; background: var(--border); border-radius: 4px; height: 6px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: var(--accent); border-radius: 4px; width: 85%; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+  
+  
+  
+  
+  
+  
+  .topbar-back-btn:hover { background: var(--primary); color: white; }
+
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="topbar-home" href="index.html">
+    <div class="topbar-logo-icon">📊</div>
+    <div class="topbar-logo-text">인공지능 기초 with 데이터 분석</div>
+  </a>
+  <a class="topbar-back-btn" href="index.html">⌂ 메인으로</a>
+</header>
+
+<main class="main">
+  <div class="content">
+
+    <div class="breadcrumb">홈 › 질문을 설계하라 › <span>2-3 좋은 질문의 조건</span></div>
+
+    <div class="lesson-header">
+      <div class="lesson-meta">
+        <span class="lesson-meta-badge">📖 2단원 · 2-3</span>
+        <span>⏱ 15분</span>
+      </div>
+      <div class="lesson-title">좋은 질문의 조건</div>
+      <div class="lesson-subtitle">질문 품질 자가진단</div>
+    </div>
+
+    <div class="intro-text">
+      지금까지 질문을 만드는 법을 배웠습니다. 이제 만들어진 질문의 <strong>품질을 평가하는 눈</strong>을 키워봅시다.
+    </div>
+
+    <!-- CHECKPOINTS -->
+    <div class="section-title">
+      <div class="section-title-icon">✅</div>
+      질문 품질 4가지 체크포인트
+    </div>
+
+    <div class="checkpoint-grid">
+      <div class="checkpoint-card">
+        <div class="checkpoint-icon">📏</div>
+        <div class="checkpoint-title">측정 가능한<br>변수 포함</div>
+      </div>
+      <div class="checkpoint-card">
+        <div class="checkpoint-icon">🎯</div>
+        <div class="checkpoint-title">분석 대상<br>명확</div>
+      </div>
+      <div class="checkpoint-card">
+        <div class="checkpoint-icon">📊</div>
+        <div class="checkpoint-title">데이터로<br>답 가능</div>
+      </div>
+      <div class="checkpoint-card">
+        <div class="checkpoint-icon">⚖️</div>
+        <div class="checkpoint-title">중립적<br>질문</div>
+      </div>
+    </div>
+
+    <div class="note-box">
+      <span class="note-label">참고</span>
+      <div class="note-text">4가지 기준을 모두 충족하면 좋은 데이터 질문입니다. 하나라도 부족하면 다듬어야 할 부분이 있다는 뜻이에요.</div>
+    </div>
+
+    <!-- PRACTICE -->
+    <div class="practice-box">
+      <div class="practice-header" onclick="togglePractice(this)">
+        <div class="practice-header-left">
+          <span class="practice-badge">실습</span>
+          <span class="practice-title-text">질문 품질 평가하기</span>
+        </div>
+        <span class="practice-toggle">▲ 접기</span>
+      </div>
+      <div class="practice-body">
+        <p class="practice-intro">아래 질문들을 읽고, 4가지 기준에 맞는지 체크해보세요. 체크를 마치면 <strong>"평가 확인"</strong>을 눌러 결과를 확인하세요.</p>
+
+        <!-- Q1 -->
+        <div class="eval-item" id="eq1">
+          <div class="eval-num-row">
+            <div class="eval-num">1</div>
+            <div class="eval-question">"스마트폰 사용 시간이 3시간 이상인 고등학생의 수면 시간이 3시간 미만인 학생보다 짧은가?"</div>
+          </div>
+          <div class="eval-checks">
+            <div class="eval-check" onclick="toggleCheck(this)">📏 측정 가능한 변수 포함</div>
+            <div class="eval-check" onclick="toggleCheck(this)">🎯 분석 대상 명확</div>
+            <div class="eval-check" onclick="toggleCheck(this)">📊 데이터로 답 가능</div>
+            <div class="eval-check" onclick="toggleCheck(this)">⚖️ 중립적 질문</div>
+          </div>
+          <button class="eval-submit" onclick="checkEval('eq1',[true,true,true,true])">평가 확인</button>
+          <div class="eval-result" id="eq1-result"></div>
+        </div>
+
+        <!-- Q2 -->
+        <div class="eval-item" id="eq2">
+          <div class="eval-num-row">
+            <div class="eval-num">2</div>
+            <div class="eval-question">"학생들이 운동을 해야 하는가?"</div>
+          </div>
+          <div class="eval-checks">
+            <div class="eval-check" onclick="toggleCheck(this)">📏 측정 가능한 변수 포함</div>
+            <div class="eval-check" onclick="toggleCheck(this)">🎯 분석 대상 명확</div>
+            <div class="eval-check" onclick="toggleCheck(this)">📊 데이터로 답 가능</div>
+            <div class="eval-check" onclick="toggleCheck(this)">⚖️ 중립적 질문</div>
+          </div>
+          <button class="eval-submit" onclick="checkEval('eq2',[false,false,false,false])">평가 확인</button>
+          <div class="eval-result" id="eq2-result"></div>
+        </div>
+
+        <!-- Q3 -->
+        <div class="eval-item" id="eq3">
+          <div class="eval-num-row">
+            <div class="eval-num">3</div>
+            <div class="eval-question">"서울 1월 평균 기온은 2015년부터 2025년까지 상승 추세인가?"</div>
+          </div>
+          <div class="eval-checks">
+            <div class="eval-check" onclick="toggleCheck(this)">📏 측정 가능한 변수 포함</div>
+            <div class="eval-check" onclick="toggleCheck(this)">🎯 분석 대상 명확</div>
+            <div class="eval-check" onclick="toggleCheck(this)">📊 데이터로 답 가능</div>
+            <div class="eval-check" onclick="toggleCheck(this)">⚖️ 중립적 질문</div>
+          </div>
+          <button class="eval-submit" onclick="checkEval('eq3',[true,true,true,true])">평가 확인</button>
+          <div class="eval-result" id="eq3-result"></div>
+        </div>
+
+        <!-- Q4 -->
+        <div class="eval-item" id="eq4">
+          <div class="eval-num-row">
+            <div class="eval-num">4</div>
+            <div class="eval-question">"공부를 많이 하면 성적이 오를까?"</div>
+          </div>
+          <div class="eval-checks">
+            <div class="eval-check" onclick="toggleCheck(this)">📏 측정 가능한 변수 포함</div>
+            <div class="eval-check" onclick="toggleCheck(this)">🎯 분석 대상 명확</div>
+            <div class="eval-check" onclick="toggleCheck(this)">📊 데이터로 답 가능</div>
+            <div class="eval-check" onclick="toggleCheck(this)">⚖️ 중립적 질문</div>
+          </div>
+          <button class="eval-submit" onclick="checkEval('eq4',[false,false,true,true])">평가 확인</button>
+          <div class="eval-result" id="eq4-result"></div>
+        </div>
+
+        <!-- Q5 -->
+        <div class="eval-item" id="eq5">
+          <div class="eval-num-row">
+            <div class="eval-num">5</div>
+            <div class="eval-question">"우리 반 학생들의 키는 전국 평균보다 큰가?"</div>
+          </div>
+          <div class="eval-checks">
+            <div class="eval-check" onclick="toggleCheck(this)">📏 측정 가능한 변수 포함</div>
+            <div class="eval-check" onclick="toggleCheck(this)">🎯 분석 대상 명확</div>
+            <div class="eval-check" onclick="toggleCheck(this)">📊 데이터로 답 가능</div>
+            <div class="eval-check" onclick="toggleCheck(this)">⚖️ 중립적 질문</div>
+          </div>
+          <button class="eval-submit" onclick="checkEval('eq5',[true,true,true,true])">평가 확인</button>
+          <div class="eval-result" id="eq5-result"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- TIPS -->
+    <div class="section-title">
+      <div class="section-title-icon">💡</div>
+      질문을 개선하는 3가지 팁
+    </div>
+
+    <div class="tips-grid">
+      <div class="tip-card">
+        <div class="tip-card-header">
+          <span class="tip-badge">Tip 1</span>
+          "많이", "적게" → 구체적 숫자로
+        </div>
+        <div class="tip-body">
+          <div class="tip-col bad">
+            <div class="tip-col-label">✗ 나쁜 예</div>
+            <div class="tip-col-text">"공부를 많이 하면"</div>
+          </div>
+          <div class="tip-col good">
+            <div class="tip-col-label">✓ 좋은 예</div>
+            <div class="tip-col-text">"일 평균 4시간 이상 공부하면"</div>
+          </div>
+        </div>
+      </div>
+      <div class="tip-card">
+        <div class="tip-card-header">
+          <span class="tip-badge">Tip 2</span>
+          "~해야 하는가" → "~인가"로
+        </div>
+        <div class="tip-body">
+          <div class="tip-col bad">
+            <div class="tip-col-label">✗ 나쁜 예</div>
+            <div class="tip-col-text">"운동을 해야 하는가?"</div>
+          </div>
+          <div class="tip-col good">
+            <div class="tip-col-label">✓ 좋은 예</div>
+            <div class="tip-col-text">"운동 빈도와 체력 지수 사이에 상관관계가 있는가?"</div>
+          </div>
+        </div>
+      </div>
+      <div class="tip-card">
+        <div class="tip-card-header">
+          <span class="tip-badge">Tip 3</span>
+          비교 기준을 명시하기
+        </div>
+        <div class="tip-body">
+          <div class="tip-col bad">
+            <div class="tip-col-label">✗ 나쁜 예</div>
+            <div class="tip-col-text">"성적이 높은가?"</div>
+          </div>
+          <div class="tip-col good">
+            <div class="tip-col-label">✓ 좋은 예</div>
+            <div class="tip-col-text">"A반의 평균 성적이 B반보다 높은가?"</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUMMARY -->
+    <div class="summary-box">
+      <div class="summary-title">이번 레슨에서 배운 것</div>
+      <ul class="summary-list">
+        <li><strong>질문 품질의 4가지 체크포인트:</strong> 측정가능, 대상명확, 답변가능, 중립</li>
+        <li><strong>실전 질문 평가 연습</strong> — 5가지 질문 직접 채점해보기</li>
+        <li><strong>모호한 질문 개선 3가지 팁:</strong> 숫자 구체화 / "~인가"로 변환 / 비교 기준 명시</li>
+      </ul>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="btn btn-secondary" onclick="location.href='situation-cards-2-2.html'">← 이전 레슨</button>
+      <div style="display:flex;align-items:center;gap:12px;color:var(--text-muted);font-size:12px;">
+        <span>6 / 6</span>
+        <div class="progress-bar-wrap"><div class="progress-bar-fill"></div></div>
+        <span>100% 완료</span>
+      </div>
+      <button class="btn btn-primary" disabled style="opacity:0.35;cursor:not-allowed;">다음 레슨 →</button>
+    </div>
+
+  </div>
+</main>
+
+<script>
+const evalData = {
+  eq1: {
+    answers: [true,true,true,true],
+    msgs: {
+      perfect: { cls:'perfect', title:'✅ 좋은 질문! (4/4)', desc:'훌륭한 질문입니다! 측정 가능한 변수(사용 시간, 수면 시간), 명확한 대상(고등학생), 데이터로 답 가능, 중립적입니다.', key:'✓📏 ✓🎯 ✓📊 ✓⚖️' },
+      partial: { cls:'partial', title:'🔧 거의 다 됐어요!',  desc:'거의 맞췄습니다! 이 질문은 4가지 조건을 모두 충족하는 좋은 질문입니다. 다시 확인해보세요.', key:'✓📏 ✓🎯 ✓📊 ✓⚖️' },
+      bad:    { cls:'bad',     title:'❌ 다시 도전!',       desc:'이 질문은 4가지 모두 충족합니다. 각 기준을 다시 읽어보고 체크해보세요.', key:'✓📏 ✓🎯 ✓📊 ✓⚖️' }
+    }
+  },
+  eq2: {
+    answers: [false,false,false,false],
+    msgs: {
+      perfect: { cls:'perfect', title:'⚠️ 나쁜 질문 정확히 파악! (4/4)', desc:'이것은 가치 판단 질문이지 데이터 질문이 아닙니다. "운동 빈도와 학업 성취도의 관계는?"으로 바꿔보세요.', key:'✗📏 ✗🎯 ✗📊 ✗⚖️' },
+      partial: { cls:'partial', title:'🔧 좀 더 생각해봐요!',            desc:'"해야 하는가"는 가치 판단이므로 측정가능·데이터로답가능·중립적 모두 해당하지 않습니다.', key:'✗📏 ✗🎯 ✗📊 ✗⚖️' },
+      bad:    { cls:'bad',     title:'❌ 다시 도전!',                    desc:'이 질문은 4가지 모두 충족하지 않습니다. 기준을 다시 읽어보세요.', key:'✗📏 ✗🎯 ✗📊 ✗⚖️' }
+    }
+  },
+  eq3: {
+    answers: [true,true,true,true],
+    msgs: {
+      perfect: { cls:'perfect', title:'✅ 완벽한 질문! (4/4)', desc:'완벽한 질문입니다! 구체적 시간(2015-2025), 장소(서울), 변수(1월 평균 기온), 분석 방법(추세)이 모두 명확합니다.', key:'✓📏 ✓🎯 ✓📊 ✓⚖️' },
+      partial: { cls:'partial', title:'🔧 거의 다 됐어요!',   desc:'이 질문은 4가지 모두 충족합니다. 다시 확인해보세요.', key:'✓📏 ✓🎯 ✓📊 ✓⚖️' },
+      bad:    { cls:'bad',     title:'❌ 다시 도전!',          desc:'이 질문은 4가지 모두 충족하는 아주 좋은 질문입니다!', key:'✓📏 ✓🎯 ✓📊 ✓⚖️' }
+    }
+  },
+  eq4: {
+    answers: [false,false,true,true],
+    msgs: {
+      perfect: { cls:'perfect', title:'🔧 개선 가능 (2/4)', desc:'"많이"가 모호합니다. "일 평균 공부 시간이 4시간 이상인 학생의 평균 성적이 2시간 미만 학생보다 높은가?"로 구체화해보세요.', key:'✗📏 ✗🎯 ✓📊 ✓⚖️' },
+      partial: { cls:'partial', title:'🔧 아직 부족해요!',   desc:'📏(측정가능)은 "많이"가 모호하고, 🎯(대상)은 누가 공부하는지 불명확합니다. 📊와 ⚖️은 충족합니다.', key:'✗📏 ✗🎯 ✓📊 ✓⚖️' },
+      bad:    { cls:'bad',     title:'❌ 다시 도전!',        desc:'이 질문은 📊(데이터로 답 가능)와 ⚖️(중립)은 충족하지만, 📏(측정가능)와 🎯(대상명확)는 부족합니다.', key:'✗📏 ✗🎯 ✓📊 ✓⚖️' }
+    }
+  },
+  eq5: {
+    answers: [true,true,true,true],
+    msgs: {
+      perfect: { cls:'perfect', title:'✅ 좋은 질문! (4/4)', desc:'좋은 질문입니다! 변수(키), 비교 기준(전국 평균), 대상(우리 반)이 명확합니다.', key:'✓📏 ✓🎯 ✓📊 ✓⚖️' },
+      partial: { cls:'partial', title:'🔧 거의 다 됐어요!',  desc:'이 질문은 4가지 모두 충족합니다. 다시 확인해보세요.', key:'✓📏 ✓🎯 ✓📊 ✓⚖️' },
+      bad:    { cls:'bad',     title:'❌ 다시 도전!',        desc:'이 질문은 4가지 모두 충족하는 좋은 질문입니다!', key:'✓📏 ✓🎯 ✓📊 ✓⚖️' }
+    }
+  }
+};
+
+function toggleCheck(label) {
+  label.classList.toggle('checked');
+}
+
+function checkEval(id, correctAnswers) {
+  const item = document.getElementById(id);
+  const checks = item.querySelectorAll('.eval-check');
+  const result = document.getElementById(id + '-result');
+
+  let userAnswers = Array.from(checks).map(c => c.classList.contains('checked'));
+  let correct = userAnswers.filter((v,i) => v === correctAnswers[i]).length;
+  let total = correctAnswers.length;
+
+  const data = evalData[id];
+  let msg;
+  if (correct === total)        msg = data.msgs.perfect;
+  else if (correct >= total/2)  msg = data.msgs.partial;
+  else                          msg = data.msgs.bad;
+
+  result.innerHTML = `
+    <div class="eval-result-title">${msg.title}</div>
+    <div class="eval-result-desc">${msg.desc}</div>
+    <div class="eval-result-answer">정답 기준: ${msg.key}</div>
+  `;
+  result.className = 'eval-result show ' + msg.cls;
+
+  // lock checkboxes
+  checks.forEach(c => c.style.pointerEvents = 'none');
+  item.querySelector('.eval-submit').disabled = true;
+  item.querySelector('.eval-submit').style.opacity = '0.5';
+}
+
+function togglePractice(header) {
+  const toggle = header.querySelector('.practice-toggle');
+  const body = header.nextElementSibling;
+  const isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : 'block';
+  toggle.textContent = isOpen ? '▼ 펼치기' : '▲ 접기';
+}
+</script>
+</body>
+</html>

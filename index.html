@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>인공지능 기초 with 데이터 분석</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary: #3B6FE8;
+    --primary-light: #EEF3FF;
+    --primary-dark: #2451C7;
+    --accent: #FF6B35;
+    --green: #2ECC71;
+    --green-light: #E8F8F0;
+    --red: #E74C3C;
+    --yellow: #F1C40F;
+    --yellow-light: #FEFCE8;
+    --purple: #8B5CF6;
+    --teal: #0EA5A0;
+    --text-primary: #1A1F36;
+    --text-secondary: #4A5568;
+    --text-muted: #9AA5B4;
+    --bg: #F7F8FC;
+    --card-bg: #FFFFFF;
+    --border: #E4E9F2;
+    --radius: 14px;
+    --shadow: 0 2px 12px rgba(59,111,232,0.08);
+    --shadow-md: 0 6px 24px rgba(59,111,232,0.13);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: var(--text-primary); min-height: 100vh; }
+
+  /* ── HEADER ── */
+  .site-header {
+    background: white; border-bottom: 1px solid var(--border);
+    padding: 0 40px; height: 56px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .header-logo { display: flex; align-items: center; gap: 10px; }
+  .header-logo-icon { width: 32px; height: 32px; background: linear-gradient(135deg, var(--primary), #6B9DFF); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  .header-logo-text { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+  .header-made { font-size: 12px; color: var(--text-muted); }
+
+  /* ── HERO ── */
+  .hero {
+    text-align: center;
+    padding: 64px 40px 52px;
+    max-width: 760px;
+    margin: 0 auto;
+  }
+  .hero-eyebrow {
+    font-size: 13px; font-weight: 600; color: var(--primary);
+    margin-bottom: 14px; letter-spacing: 0.3px;
+  }
+  .hero-title {
+    font-size: 38px; font-weight: 700; color: var(--text-primary);
+    line-height: 1.25; margin-bottom: 16px;
+  }
+  .hero-desc {
+    font-size: 16px; color: var(--text-secondary); line-height: 1.8;
+    margin-bottom: 28px;
+  }
+  .hero-desc strong { color: var(--text-primary); }
+
+  .hero-stats {
+    display: inline-flex; align-items: center; gap: 24px;
+    background: white; border: 1px solid var(--border);
+    border-radius: 50px; padding: 10px 28px;
+    font-size: 13px; color: var(--text-secondary);
+  }
+  .hero-stat { display: flex; align-items: center; gap: 6px; }
+  .hero-stat-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border); }
+
+  /* ── UNIT TABS ── */
+  .unit-tabs {
+    display: flex; justify-content: center; gap: 8px;
+    padding: 0 40px 32px;
+    flex-wrap: wrap;
+  }
+  .unit-tab {
+    padding: 7px 18px; border-radius: 20px;
+    border: 1.5px solid var(--border); background: white;
+    font-size: 13px; font-weight: 500; color: var(--text-secondary);
+    cursor: pointer; transition: all 0.15s; font-family: 'Noto Sans KR', sans-serif;
+  }
+  .unit-tab:hover { border-color: var(--primary); color: var(--primary); }
+  .unit-tab.active { background: var(--primary); border-color: var(--primary); color: white; font-weight: 600; }
+
+  /* ── MODULES GRID ── */
+  .modules-wrap { max-width: 1000px; margin: 0 auto; padding: 0 40px 80px; }
+
+  .modules-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  /* ── MODULE CARD ── */
+  .module-card {
+    background: var(--card-bg); border: 1.5px solid var(--border);
+    border-radius: var(--radius); overflow: hidden;
+    transition: all 0.2s;
+  }
+  .module-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+  .module-card.locked { opacity: 0.65; }
+
+  .module-card-header {
+    padding: 22px 24px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: flex-start; gap: 14px;
+  }
+
+  .module-num-icon {
+    width: 42px; height: 42px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+  }
+
+  .module-header-text { flex: 1; }
+  .module-num-label { font-size: 11px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.5px; margin-bottom: 4px; }
+  .module-title { font-size: 16px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; }
+  .module-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+
+  .module-card-footer {
+    padding: 14px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .module-lesson-count {
+    font-size: 12px; color: var(--text-muted); font-weight: 500;
+  }
+  .module-locked-badge {
+    font-size: 11px; font-weight: 700; color: var(--text-muted);
+    background: var(--bg); border: 1px solid var(--border);
+    padding: 3px 10px; border-radius: 10px;
+  }
+
+  /* ── LESSONS LIST ── */
+  .lessons-list { padding: 4px 24px 16px; }
+  .lesson-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--border);
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .lesson-row:last-child { border-bottom: none; }
+  .lesson-row:hover .lesson-row-title { color: var(--primary); }
+  .lesson-row:hover .lesson-row-arrow { opacity: 1; }
+  .lesson-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--border); flex-shrink: 0;
+    transition: background 0.15s;
+  }
+  .lesson-row:hover .lesson-dot { background: var(--primary); }
+  .lesson-row-num { font-size: 11px; color: var(--text-muted); font-weight: 600; flex-shrink: 0; min-width: 28px; }
+  .lesson-row-title { font-size: 13.5px; color: var(--text-secondary); flex: 1; font-weight: 500; }
+  .lesson-row-arrow { font-size: 12px; color: var(--primary); opacity: 0; transition: opacity 0.15s; }
+  .lesson-row.locked-lesson { cursor: not-allowed; }
+  .lesson-row.locked-lesson .lesson-row-title { color: var(--text-muted); }
+  .lesson-lock { font-size: 13px; }
+
+  /* ── COLOR THEMES ── */
+  .theme-blue   { background: #EEF3FF; color: var(--primary); }
+  .theme-orange { background: #FFF0EB; color: var(--accent); }
+  .theme-purple { background: #F3F0FF; color: var(--purple); }
+  .theme-green  { background: #E8F8F0; color: var(--green); }
+
+  .module-card.theme-blue-card   { border-color: #C5D5FF; }
+  .module-card.theme-orange-card { border-color: #FFCFAA; }
+  .module-card.theme-purple-card { border-color: #D4C8FF; }
+  .module-card.theme-green-card  { border-color: #A8E6C5; }
+
+  .module-card.theme-blue-card   .module-card-header { background: #FAFBFF; }
+  .module-card.theme-orange-card .module-card-header { background: #FFFAF7; }
+  .module-card.theme-purple-card .module-card-header { background: #FAF8FF; }
+  .module-card.theme-green-card  .module-card-header { background: #F5FDF8; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="site-header">
+  <div class="header-logo">
+    <div class="header-logo-icon">📊</div>
+    <div>
+      <div class="header-logo-text">인공지능 기초 with 데이터 분석</div>
+    </div>
+  </div>
+  <div class="header-made">made by 정보 교사 송세영</div>
+</header>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow">모두를 위한 실습 중심의 데이터 리터러시 수업!</div>
+  <h1 class="hero-title">인공지능 기초<br>with 데이터 분석</h1>
+  <p class="hero-desc">
+    데이터를 읽고, 질문하고, 분석하고, 검증하는 힘을 키우세요.<br>
+    <strong>설명을 읽고 바로 실습</strong>하며 자연스럽게 익히는 인터랙티브 학습 사이트입니다.
+  </p>
+  <div class="hero-stats">
+    <div class="hero-stat">📦 4개 모듈</div>
+    <div class="hero-stat-dot"></div>
+    <div class="hero-stat">📄 7개 레슨</div>
+    <div class="hero-stat-dot"></div>
+    <div class="hero-stat">⏱ 약 3시간</div>
+  </div>
+</div>
+
+<!-- MODULES -->
+<div class="modules-wrap">
+  <div class="modules-grid">
+
+    <!-- MODULE 1 -->
+    <div class="module-card theme-blue-card">
+      <div class="module-card-header">
+        <div class="module-num-icon theme-blue">📊</div>
+        <div class="module-header-text">
+          <div class="module-num-label">MODULE 1</div>
+          <div class="module-title">데이터란 무엇인가</div>
+          <div class="module-desc">일상 속 데이터를 발견하고, 데이터의 종류와 품질을 이해합니다.</div>
+        </div>
+      </div>
+      <div class="lessons-list">
+        <a class="lesson-row" href="data-analysis-site.html">
+          <div class="lesson-dot"></div>
+          <div class="lesson-row-num">1-1</div>
+          <div class="lesson-row-title">우리 주변의 데이터</div>
+          <div class="lesson-row-arrow">→</div>
+        </a>
+        <a class="lesson-row" href="data-types-1-2.html">
+          <div class="lesson-dot"></div>
+          <div class="lesson-row-num">1-2</div>
+          <div class="lesson-row-title">데이터의 종류</div>
+          <div class="lesson-row-arrow">→</div>
+        </a>
+        <a class="lesson-row" href="data-quality-1-3.html">
+          <div class="lesson-dot"></div>
+          <div class="lesson-row-num">1-3</div>
+          <div class="lesson-row-title">좋은 데이터 vs 나쁜 데이터</div>
+          <div class="lesson-row-arrow">→</div>
+        </a>
+      </div>
+      <div class="module-card-footer">
+        <div class="module-lesson-count">3개 레슨</div>
+      </div>
+    </div>
+
+    <!-- MODULE 2 -->
+    <div class="module-card theme-orange-card">
+      <div class="module-card-header">
+        <div class="module-num-icon theme-orange">❓</div>
+        <div class="module-header-text">
+          <div class="module-num-label">MODULE 2</div>
+          <div class="module-title">질문을 설계하라</div>
+          <div class="module-desc">막연한 궁금증을 데이터로 답할 수 있는 질문으로 변환합니다.</div>
+        </div>
+      </div>
+      <div class="lessons-list">
+        <a class="lesson-row" href="question-design-2-1.html">
+          <div class="lesson-dot"></div>
+          <div class="lesson-row-num">2-1</div>
+          <div class="lesson-row-title">궁금증에서 질문으로</div>
+          <div class="lesson-row-arrow">→</div>
+        </a>
+        <a class="lesson-row" href="situation-cards-2-2.html">
+          <div class="lesson-dot"></div>
+          <div class="lesson-row-num">2-2</div>
+          <div class="lesson-row-title">상황카드로 질문 만들기</div>
+          <div class="lesson-row-arrow">→</div>
+        </a>
+        <a class="lesson-row" href="good-question-2-3.html">
+          <div class="lesson-dot"></div>
+          <div class="lesson-row-num">2-3</div>
+          <div class="lesson-row-title">좋은 질문의 조건</div>
+          <div class="lesson-row-arrow">→</div>
+        </a>
+      </div>
+      <div class="module-card-footer">
+        <div class="module-lesson-count">3개 레슨</div>
+      </div>
+    </div>
+
+    <!-- MODULE 3 (locked) -->
+    <div class="module-card theme-purple-card locked">
+      <div class="module-card-header">
+        <div class="module-num-icon theme-purple">🔍</div>
+        <div class="module-header-text">
+          <div class="module-num-label">MODULE 3</div>
+          <div class="module-title">데이터 탐색하기</div>
+          <div class="module-desc">실제 데이터를 직접 다루며 패턴과 이상치를 발견합니다.</div>
+        </div>
+      </div>
+      <div class="lessons-list">
+        <div class="lesson-row locked-lesson">
+          <div class="lesson-dot"></div>
+          <div class="lesson-row-num">3-1</div>
+          <div class="lesson-row-title">데이터 읽기 기초</div>
+          <div class="lesson-lock">🔒</div>
+        </div>
+        <div class="lesson-row locked-lesson">
+          <div class="lesson-dot"></div>
+          <div class="lesson-row-num">3-2</div>
+          <div class="lesson-row-title">기초 통계 이해하기</div>
+          <div class="lesson-lock">🔒</div>
+        </div>
+        <div class="lesson-row locked-lesson">
+          <div class="lesson-dot"></div>
+          <div class="lesson-row-num">3-3</div>
+          <div class="lesson-row-title">패턴 찾기</div>
+          <div class="lesson-lock">🔒</div>
+        </div>
+        <div class="lesson-row locked-lesson">
+          <div class="lesson-dot"></div>
+          <div class="lesson-row-num">3-4</div>
+          <div class="lesson-row-title">이상치 탐정</div>
+          <div class="lesson-lock">🔒</div>
+        </div>
+      </div>
+      <div class="module-card-footer">
+        <div class="module-lesson-count">4개 레슨</div>
+        <div class="module-locked-badge">🔒 준비 중</div>
+      </div>
+    </div>
+
+    <!-- MODULE 4 (locked) -->
+    <div class="module-card theme-green-card locked">
+      <div class="module-card-header">
+        <div class="module-num-icon theme-green">📈</div>
+        <div class="module-header-text">
+          <div class="module-num-label">MODULE 4</div>
+          <div class="module-title">시각화로 이야기하기</div>
+          <div class="module-desc">데이터를 차트로 표현하고, 올바르게 읽는 방법을 배웁니다.</div>
+        </div>
+      </div>
+      <div class="lessons-list">
+        <div class="lesson-row locked-lesson">
+          <div class="lesson-dot"></div>
+          <div class="lesson-row-num">4-1</div>
+          <div class="lesson-row-title">차트 읽기</div>
+          <div class="lesson-lock">🔒</div>
+        </div>
+        <div class="lesson-row locked-lesson">
+          <div class="lesson-dot"></div>
+          <div class="lesson-row-num">4-2</div>
+          <div class="lesson-row-title">올바른 차트 선택하기</div>
+          <div class="lesson-lock">🔒</div>
+        </div>
+        <div class="lesson-row locked-lesson">
+          <div class="lesson-dot"></div>
+          <div class="lesson-row-num">4-3</div>
+          <div class="lesson-row-title">나만의 차트 만들기</div>
+          <div class="lesson-lock">🔒</div>
+        </div>
+      </div>
+      <div class="module-card-footer">
+        <div class="module-lesson-count">3개 레슨</div>
+        <div class="module-locked-badge">🔒 준비 중</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>
