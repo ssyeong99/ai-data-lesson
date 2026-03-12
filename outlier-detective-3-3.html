@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3-3 이상치 탐정 | 인공지능 기초 with 데이터 분석</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary:#3B6FE8; --primary-light:#EEF3FF; --primary-dark:#2451C7;
+    --accent:#FF6B35; --accent-light:#FFF0EB;
+    --green:#2ECC71; --green-light:#E8F8F0;
+    --red:#E74C3C; --red-light:#FDECEA;
+    --yellow:#F1C40F; --yellow-light:#FEFCE8;
+    --teal:#0EA5A0; --teal-light:#EDFAFA;
+    --purple:#8B5CF6; --purple-light:#F3F0FF;
+    --text-primary:#1A1F36; --text-secondary:#4A5568; --text-muted:#9AA5B4;
+    --bg:#F7F8FC; --card-bg:#FFFFFF; --border:#E4E9F2;
+    --radius:12px;
+    --shadow:0 2px 12px rgba(59,111,232,0.08);
+    --shadow-md:0 4px 20px rgba(59,111,232,0.12);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text-primary);min-height:100vh;font-size:15px;line-height:1.7;}
+
+  /* TOPBAR */
+  .topbar{position:sticky;top:0;z-index:200;background:#fff;border-bottom:1px solid var(--border);padding:0 32px;height:52px;display:flex;align-items:center;justify-content:space-between;}
+  .topbar-home{display:flex;align-items:center;gap:10px;text-decoration:none;}
+  .topbar-logo-icon{width:30px;height:30px;background:linear-gradient(135deg,var(--primary),#6B9DFF);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+  .topbar-logo-text{font-size:13px;font-weight:700;color:var(--text-primary);}
+  .topbar-back-btn{background:var(--primary-light);color:var(--primary);border:1px solid #C5D5FF;border-radius:8px;padding:6px 14px;font-size:13px;font-weight:600;text-decoration:none;transition:all .15s;}
+  .topbar-back-btn:hover{background:var(--primary);color:white;}
+
+  /* LAYOUT */
+  .main{width:100%;}
+  .content{max-width:860px;margin:0 auto;padding:40px 40px 80px;}
+
+  /* BREADCRUMB */
+  .breadcrumb{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);margin-bottom:24px;}
+  .breadcrumb span{color:var(--accent);font-weight:500;}
+
+  /* LESSON HEADER */
+  .lesson-header{background:linear-gradient(135deg,#0D7A75 0%,#1ABC9C 100%);border-radius:16px;padding:32px 36px;color:white;margin-bottom:32px;position:relative;overflow:hidden;}
+  .lesson-header::before{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,0.06);}
+  .lesson-meta{display:flex;align-items:center;gap:10px;font-size:12px;opacity:.85;margin-bottom:10px;}
+  .lesson-meta-badge{background:rgba(255,255,255,0.2);border-radius:20px;padding:3px 10px;font-weight:500;}
+  .lesson-title{font-size:28px;font-weight:700;margin-bottom:6px;}
+  .lesson-subtitle{font-size:15px;opacity:.85;}
+
+  /* INTRO */
+  .intro-text{background:var(--card-bg);border-radius:var(--radius);padding:22px 28px;border:1px solid var(--border);color:var(--text-secondary);font-size:15px;line-height:1.85;margin-bottom:28px;}
+
+  /* SECTION */
+  .section-title{font-size:18px;font-weight:700;color:var(--text-primary);margin:32px 0 16px;display:flex;align-items:center;gap:10px;padding-bottom:12px;border-bottom:2px solid #C8F0E8;}
+  .section-title-icon{width:32px;height:32px;background:#E0FAF5;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+
+  /* BOXES */
+  .concept-box{background:linear-gradient(135deg,var(--primary-light),#F5F0FF);border:1.5px solid #C5D5FF;border-radius:var(--radius);padding:20px 26px;margin-bottom:24px;}
+  .concept-label{display:inline-flex;align-items:center;gap:6px;background:var(--primary);color:white;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;margin-bottom:12px;}
+  .concept-text{font-size:14px;color:var(--text-secondary);line-height:1.75;}
+
+  .tip-box{background:var(--yellow-light);border:1.5px solid #F9E04B;border-radius:var(--radius);padding:14px 20px;margin:16px 0;display:flex;gap:10px;font-size:13.5px;color:#6B5000;}
+  .tip-label{background:var(--yellow);color:#5A4000;font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;flex-shrink:0;margin-top:3px;}
+  .note-box{background:var(--primary-light);border:1.5px solid #C5D5FF;border-radius:var(--radius);padding:14px 20px;margin:16px 0;display:flex;gap:10px;font-size:13.5px;color:var(--text-secondary);}
+  .note-label{background:var(--primary);color:white;font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;flex-shrink:0;margin-top:3px;}
+  .warn-box{background:var(--red-light);border:1.5px solid #FAD0CC;border-radius:var(--radius);padding:14px 20px;margin:16px 0;display:flex;gap:10px;font-size:13.5px;color:#7A2020;}
+  .warn-label{background:var(--red);color:white;font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;flex-shrink:0;margin-top:3px;}
+  .think-box{background:var(--purple-light);border:1.5px solid #D4C8FF;border-radius:var(--radius);padding:16px 22px;margin:16px 0;}
+  .think-label{font-size:11px;font-weight:700;color:var(--purple);margin-bottom:8px;}
+  .think-list{list-style:none;}
+  .think-list li{font-size:13.5px;color:var(--text-secondary);padding:3px 0;display:flex;gap:8px;}
+  .think-list li::before{content:"•";color:var(--purple);flex-shrink:0;}
+
+  /* EXAMPLE CARDS */
+  .example-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px;}
+  .example-card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:16px;}
+  .example-card-title{font-size:13px;font-weight:700;color:var(--text-primary);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+  .example-tag{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;margin-bottom:6px;}
+  .tag-normal{background:#E8F8F0;color:#1A7A44;}
+  .tag-outlier{background:var(--red-light);color:var(--red);}
+  .example-value{font-size:13px;color:var(--text-secondary);line-height:1.6;}
+
+  /* IQR STEPS */
+  .iqr-steps{display:flex;flex-direction:column;gap:0;margin-bottom:24px;}
+  .iqr-step{display:flex;align-items:flex-start;gap:16px;padding:12px 0;border-bottom:1px dashed var(--border);}
+  .iqr-step:last-child{border-bottom:none;}
+  .iqr-step-num{width:28px;height:28px;border-radius:50%;background:var(--primary);color:white;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+  .iqr-step-title{font-size:13.5px;font-weight:700;color:var(--text-primary);margin-bottom:3px;}
+  .iqr-step-desc{font-size:13px;color:var(--text-secondary);line-height:1.6;}
+  .iqr-step-code{font-family:monospace;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:13px;color:var(--primary);display:inline-block;margin-top:4px;}
+
+  /* PRACTICE BOX */
+  .practice-box{border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:28px;}
+  .practice-header{background:var(--text-primary);color:white;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;}
+  .practice-header-left{display:flex;align-items:center;gap:10px;}
+  .practice-badge{background:var(--teal);color:white;font-size:10px;font-weight:700;padding:2px 8px;border-radius:12px;}
+  .practice-title-text{font-size:15px;font-weight:600;}
+  .practice-toggle{font-size:12px;opacity:.75;}
+  .practice-body{background:var(--card-bg);padding:24px 28px;}
+
+  /* ── INTERACTIVE TOOL ── */
+  .tool-wrap{background:white;border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:20px;}
+  .tool-chart-area{padding:16px 20px 12px;}
+  .tool-chart-title{text-align:center;font-size:13.5px;font-weight:700;color:var(--text-primary);margin-bottom:12px;}
+  canvas#scatterCanvas{display:block;width:100%;cursor:crosshair;}
+
+  /* Slider section */
+  .tool-slider-wrap{background:#F8F9FB;border-top:1px solid var(--border);padding:16px 24px 12px;}
+  .slider-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+  .slider-label{font-size:13px;font-weight:700;color:var(--text-primary);}
+  .slider-value{font-size:16px;font-weight:700;color:var(--primary);min-width:36px;text-align:right;}
+  input[type=range]#iqrSlider{
+    -webkit-appearance:none;width:100%;height:6px;border-radius:4px;background:var(--border);outline:none;cursor:pointer;margin-bottom:6px;
+  }
+  input[type=range]#iqrSlider::-webkit-slider-thumb{
+    -webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--primary);cursor:pointer;box-shadow:0 2px 6px rgba(59,111,232,0.35);
+  }
+  .slider-hints{display:flex;justify-content:space-between;font-size:11.5px;color:var(--text-muted);padding:0 2px;}
+
+  /* Stats section */
+  .tool-stats-wrap{display:grid;grid-template-columns:1fr 1fr;gap:0;border-top:1px solid var(--border);}
+  .stat-box{padding:14px 20px;}
+  .stat-box:first-child{border-right:1px solid var(--border);}
+  .stat-box-label{font-size:11.5px;color:var(--text-muted);font-weight:600;margin-bottom:4px;}
+  .stat-box-value{font-size:24px;font-weight:700;color:var(--primary);}
+  .stat-box-sub{font-size:12px;color:var(--text-muted);margin-top:2px;}
+  .stat-box.outlier-excl .stat-box-value{color:var(--teal);}
+  .stat-box.outlier-excl{background:var(--teal-light);}
+
+  /* IQR info */
+  .tool-iqr-info{padding:10px 20px;background:var(--red-light);border-top:1px solid #FAD0CC;font-size:12.5px;color:#6A1A1A;line-height:1.7;}
+
+  /* Tooltip */
+  .chart-tooltip{position:fixed;background:rgba(26,31,54,0.92);color:white;padding:7px 12px;border-radius:8px;font-size:12.5px;font-weight:600;pointer-events:none;display:none;z-index:999;white-space:nowrap;line-height:1.5;box-shadow:0 4px 14px rgba(0,0,0,0.2);}
+
+  /* IMPACT CARDS */
+  .impact-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:24px;}
+  .impact-card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;}
+  .impact-card-icon{font-size:22px;margin-bottom:8px;}
+  .impact-card-title{font-size:13px;font-weight:700;color:var(--text-primary);margin-bottom:6px;}
+  .impact-card-desc{font-size:13px;color:var(--text-secondary);line-height:1.65;}
+  .impact-example{font-size:12px;color:var(--text-muted);background:var(--bg);border-radius:6px;padding:6px 10px;margin-top:8px;line-height:1.6;}
+
+  /* DECISION FLOW */
+  .decision-flow{display:flex;flex-direction:column;gap:0;margin-bottom:24px;}
+  .decision-step{display:flex;gap:16px;padding:14px 0;border-bottom:1px dashed var(--border);}
+  .decision-step:last-child{border-bottom:none;}
+  .decision-num{width:26px;height:26px;border-radius:50%;background:var(--accent);color:white;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+  .decision-q{font-size:14px;font-weight:700;color:var(--text-primary);margin-bottom:6px;}
+  .decision-branches{display:flex;flex-direction:column;gap:4px;}
+  .decision-branch{font-size:13px;color:var(--text-secondary);display:flex;gap:8px;align-items:flex-start;}
+  .branch-yes{color:var(--green);font-weight:700;flex-shrink:0;}
+  .branch-no{color:var(--red);font-weight:700;flex-shrink:0;}
+
+  /* SCENARIO QUIZ */
+  .scenario-list{display:flex;flex-direction:column;gap:14px;}
+  .scenario-item{background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+  .scenario-q{padding:14px 18px;font-size:14px;font-weight:600;color:var(--text-primary);display:flex;justify-content:space-between;align-items:center;cursor:pointer;gap:12px;}
+  .scenario-q:hover{background:var(--primary-light);}
+  .scenario-q-text{flex:1;}
+  .scenario-toggle{font-size:12px;color:var(--primary);flex-shrink:0;white-space:nowrap;}
+  .scenario-a{padding:12px 18px;background:white;border-top:1px dashed var(--border);font-size:13.5px;color:var(--text-secondary);line-height:1.7;display:none;}
+  .scenario-a.show{display:block;animation:fadeIn .25s ease;}
+
+  /* QUIZ */
+  .quiz-block{margin-bottom:20px;}
+  .quiz-q{font-size:14.5px;font-weight:600;color:var(--text-primary);margin-bottom:10px;display:flex;gap:8px;align-items:flex-start;}
+  .quiz-q::before{content:'Q';background:var(--teal);color:white;font-size:11px;font-weight:700;padding:2px 7px;border-radius:5px;flex-shrink:0;margin-top:2px;}
+  .quiz-options{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;}
+  .quiz-btn{padding:8px 16px;border-radius:8px;border:1.5px solid var(--border);background:white;font-size:13px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;color:var(--text-secondary);transition:all .15s;}
+  .quiz-btn:hover:not(:disabled){border-color:var(--teal);color:var(--teal);background:var(--teal-light);}
+  .quiz-btn.correct{background:var(--green-light);border-color:var(--green);color:#1A7A44;font-weight:700;}
+  .quiz-btn.wrong{background:var(--red-light);border-color:var(--red);color:var(--red);font-weight:700;}
+  .quiz-btn.reveal-correct{background:var(--green-light);border-color:var(--green);color:#1A7A44;}
+  .quiz-btn:disabled{cursor:default;}
+  .quiz-feedback{display:none;padding:12px 16px;border-radius:8px;font-size:13.5px;line-height:1.65;animation:fadeIn .25s ease;margin-top:4px;}
+  .quiz-feedback.correct{background:var(--green-light);border:1px solid var(--green);color:#1A5A30;}
+  .quiz-feedback.wrong{background:var(--red-light);border:1px solid var(--red);color:#6A1A1A;}
+
+  /* SUMMARY */
+  .summary-box{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:26px 30px;margin-bottom:24px;}
+  .summary-title{font-size:15px;font-weight:700;color:var(--text-primary);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+  .summary-title::before{content:'';width:4px;height:18px;background:var(--accent);border-radius:2px;}
+  .summary-list{list-style:none;}
+  .summary-list li{font-size:14px;color:var(--text-secondary);padding:8px 0;display:flex;align-items:flex-start;gap:10px;border-bottom:1px dashed var(--border);}
+  .summary-list li:last-child{border-bottom:none;}
+  .summary-list li::before{content:'✓';color:var(--green);font-weight:700;flex-shrink:0;margin-top:1px;}
+
+  /* NAV */
+  .nav-buttons{display:flex;justify-content:space-between;align-items:center;margin-top:40px;padding-top:24px;border-top:1px solid var(--border);}
+  .btn{padding:12px 24px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all .15s;display:flex;align-items:center;gap:8px;border:none;}
+  .btn-secondary{background:var(--bg);color:var(--text-secondary);border:1px solid var(--border);}
+  .btn-secondary:hover{background:var(--border);}
+  .btn-primary{background:var(--accent);color:white;}
+  .btn-primary:hover{background:#E85A20;box-shadow:0 4px 14px rgba(255,107,53,0.3);transform:translateY(-1px);}
+  .progress-bar-wrap{flex:1;max-width:200px;margin:0 20px;background:var(--border);border-radius:4px;height:6px;overflow:hidden;}
+  .progress-bar-fill{height:100%;background:var(--accent);border-radius:4px;}
+
+  @keyframes fadeIn{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:translateY(0);}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="topbar-home" href="index.html">
+    <div class="topbar-logo-icon">📊</div>
+    <div class="topbar-logo-text">인공지능 기초 with 데이터 분석</div>
+  </a>
+  <a class="topbar-back-btn" href="index.html">⌂ 메인으로</a>
+</header>
+
+<div class="chart-tooltip" id="tooltip"></div>
+
+<main class="main">
+<div class="content">
+
+  <div class="breadcrumb">홈 › 데이터 탐색하기 › <span>3-3 이상치 탐정</span></div>
+
+  <div class="lesson-header">
+    <div class="lesson-meta">
+      <span class="lesson-meta-badge">📖 3단원 · 3-3</span>
+      <span>⏱ 25분</span>
+    </div>
+    <div class="lesson-title">이상치 탐정</div>
+    <div class="lesson-subtitle">이상치 찾고 처리하기</div>
+  </div>
+
+  <div class="intro-text">
+    데이터를 분석하다 보면, 다른 값들과 유독 동떨어진 값을 발견할 때가 있습니다. 이것을 <strong>이상치(outlier)</strong>라고 합니다. 이상치는 분석 결과를 왜곡할 수 있지만, 때로는 <strong>중요한 발견의 단서</strong>가 되기도 합니다.
+  </div>
+
+  <!-- 핵심 개념 -->
+  <div class="section-title"><div class="section-title-icon">🔍</div>핵심 개념</div>
+  <div class="concept-box">
+    <div class="concept-label">📋 이상치(Outlier)란?</div>
+    <div class="concept-text">
+      다른 데이터와 비교했을 때 <strong>비정상적으로 크거나 작은 값</strong>을 말합니다.<br>
+      이상치는 <strong>오류일 수도 있고, 진짜 특이한 사례일 수도 있습니다.</strong><br>
+      중요한 것은 이상치를 <em>발견하고, 원인을 파악하고, 적절히 처리하는 것</em>입니다.
+    </div>
+  </div>
+
+  <!-- 예시 -->
+  <div class="section-title"><div class="section-title-icon">📌</div>이상치란 무엇인가?</div>
+  <p style="font-size:14px;color:var(--text-secondary);margin-bottom:14px;">쉽게 말하면 "뭔가 이상한 값"입니다. 구체적인 예를 볼까요?</p>
+  <div class="example-grid">
+    <div class="example-card">
+      <div class="example-card-title">학생 200명의 스마트폰 사용 시간</div>
+      <div><span class="example-tag tag-normal">✓ 정상 범위</span></div>
+      <div class="example-value">대부분 <strong>2~5시간</strong></div>
+      <div style="margin-top:8px;"><span class="example-tag tag-outlier">⚠ 이상치</span></div>
+      <div class="example-value">한 학생이 <strong>12시간</strong><br><span style="font-size:12px;color:var(--text-muted)">입력 오류? 아니면 실제로?</span></div>
+    </div>
+    <div class="example-card">
+      <div class="example-card-title">반 학생 30명의 수학 점수</div>
+      <div><span class="example-tag tag-normal">✓ 정상 범위</span></div>
+      <div class="example-value">대부분 <strong>60~90점</strong></div>
+      <div style="margin-top:8px;"><span class="example-tag tag-outlier">⚠ 이상치</span></div>
+      <div class="example-value">한 학생이 <strong>5점</strong><br><span style="font-size:12px;color:var(--text-muted)">시험 기권? 마킹 오류?</span></div>
+    </div>
+    <div class="example-card">
+      <div class="example-card-title">직장인 50명의 월급</div>
+      <div><span class="example-tag tag-normal">✓ 정상 범위</span></div>
+      <div class="example-value">대부분 <strong>200~400만원</strong></div>
+      <div style="margin-top:8px;"><span class="example-tag tag-outlier">⚠ 이상치</span></div>
+      <div class="example-value">한 명이 <strong>5,000만원</strong><br><span style="font-size:12px;color:var(--text-muted)">임원? 데이터 혼입?</span></div>
+    </div>
+  </div>
+
+  <div class="think-box">
+    <div class="think-label">💭 생각해보기</div>
+    <ul class="think-list">
+      <li>이상치를 발견했을 때, <strong>바로 삭제하면 안 됩니다!</strong></li>
+      <li>먼저 "이 값이 왜 이상한지"를 확인해야 합니다.</li>
+      <li><strong>입력 오류라면</strong> → 수정하거나 제거</li>
+      <li><strong>실제 값이라면</strong> → 분석에 포함할지 별도 분석할지 결정</li>
+    </ul>
+  </div>
+
+  <!-- IQR 방법 -->
+  <div class="section-title"><div class="section-title-icon">📐</div>이상치를 찾는 방법: IQR 방법</div>
+  <p style="font-size:14px;color:var(--text-secondary);margin-bottom:16px;">"이상하다"는 감으로 판단하면 사람마다 기준이 다릅니다. 통계학에서는 <strong>수학적으로 이상치를 판별하는 기준</strong>을 만들었습니다. 가장 널리 쓰이는 방법이 <strong>IQR(사분위 범위) 방법</strong>입니다.</p>
+
+  <div class="iqr-steps">
+    <div class="iqr-step">
+      <div class="iqr-step-num">1</div>
+      <div>
+        <div class="iqr-step-title">데이터를 크기순으로 정렬</div>
+        <div class="iqr-step-code">1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15</div>
+      </div>
+    </div>
+    <div class="iqr-step">
+      <div class="iqr-step-num">2</div>
+      <div>
+        <div class="iqr-step-title">Q1(제1사분위수)과 Q3(제3사분위수)를 구한다</div>
+        <div class="iqr-step-desc">Q1 = 하위 25% 위치 값 &nbsp;·&nbsp; Q3 = 상위 25% 위치 값</div>
+      </div>
+    </div>
+    <div class="iqr-step">
+      <div class="iqr-step-num">3</div>
+      <div>
+        <div class="iqr-step-title">IQR = Q3 − Q1 (사분위 범위)</div>
+        <div class="iqr-step-desc">IQR = 데이터의 가운데 50%가 차지하는 범위</div>
+      </div>
+    </div>
+    <div class="iqr-step">
+      <div class="iqr-step-num">4</div>
+      <div>
+        <div class="iqr-step-title">이상치 경계를 계산한다</div>
+        <div class="iqr-step-code">하한 = Q1 − 1.5 × IQR &nbsp;·&nbsp; 상한 = Q3 + 1.5 × IQR</div>
+      </div>
+    </div>
+    <div class="iqr-step">
+      <div class="iqr-step-num">5</div>
+      <div>
+        <div class="iqr-step-title">경계 밖의 값 = 이상치!</div>
+        <div class="iqr-step-desc">하한보다 작거나, 상한보다 큰 값이 이상치</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note-box">
+    <span class="note-label">참고</span>
+    <div>통계학자 <strong>존 튜키(John Tukey)</strong>가 제안한 1.5 기준은 정규분포에서 약 0.7%의 데이터가 범위 밖에 놓입니다. 3배를 쓰면 극단적 이상치만 잡히고, 1배를 쓰면 더 많은 값이 이상치로 판별됩니다.</div>
+  </div>
+
+  <!-- 실습 1: 인터랙티브 탐정 도구 -->
+  <div class="practice-box">
+    <div class="practice-header" onclick="togglePractice(this)">
+      <div class="practice-header-left">
+        <span class="practice-badge">실습 1</span>
+        <span class="practice-title-text">이상치 탐정 체험</span>
+      </div>
+      <span class="practice-toggle">▲ 접기</span>
+    </div>
+    <div class="practice-body">
+      <p style="font-size:13.5px;color:var(--text-secondary);margin-bottom:14px;">
+        아래는 학생들의 스마트폰 사용 시간(X축)과 수면 시간(Y축)을 나타낸 산점도입니다.<br>
+        <strong>IQR 배수 슬라이더</strong>를 조절하면서, 이상치 판정 기준이 어떻게 바뀌는지 관찰해보세요.<br>
+        <span style="color:var(--red);font-weight:600;">빨간 ✕ 표시</span>가 이상치로 판정된 데이터이고, <span style="color:var(--red);font-weight:600;">빨간 점선</span>이 이상치 경계선입니다.
+      </p>
+
+      <!-- TOOL -->
+      <div class="tool-wrap">
+        <!-- Chart -->
+        <div class="tool-chart-area">
+          <div style="display:flex;align-items:center;gap:16px;margin-bottom:10px;font-size:12.5px;">
+            <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#3B6FE8;vertical-align:middle;margin-right:4px;"></span>정상</span>
+            <span><span style="display:inline-block;width:10px;height:10px;background:var(--red);vertical-align:middle;margin-right:4px;clip-path:polygon(20% 0%,80% 0%,100% 20%,100% 80%,80% 100%,20% 100%,0% 80%,0% 20%)"></span>이상치</span>
+          </div>
+          <canvas id="scatterCanvas" height="260"></canvas>
+        </div>
+
+        <!-- Slider -->
+        <div class="tool-slider-wrap">
+          <div class="slider-row">
+            <div class="slider-label">이상치 판정 기준 (IQR 배수)</div>
+            <div class="slider-value" id="sliderVal">1.5</div>
+          </div>
+          <input type="range" id="iqrSlider" min="0.5" max="3.0" step="0.1" value="1.5">
+          <div class="slider-hints">
+            <span>엄격 (0.5)</span>
+            <span>보통 (1.5)</span>
+            <span>관대 (3.0)</span>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="tool-stats-wrap">
+          <div class="stat-box">
+            <div class="stat-box-label">전체 데이터 상관계수</div>
+            <div class="stat-box-value" id="corrAll">-0.393</div>
+            <div class="stat-box-sub" id="corrAllN">20개 데이터</div>
+          </div>
+          <div class="stat-box outlier-excl">
+            <div class="stat-box-label">이상치 제외 상관계수</div>
+            <div class="stat-box-value" id="corrClean">-0.909</div>
+            <div class="stat-box-sub" id="corrCleanN">19개 데이터 (이상치 1개 제외)</div>
+          </div>
+        </div>
+
+        <!-- IQR info -->
+        <div class="tool-iqr-info" id="iqrInfo">
+          IQR = Q3(4.25) − Q1(2.0) = 2.25&nbsp;&nbsp;|&nbsp;&nbsp;
+          정상 범위: −1.4 ~ 7.6&nbsp;&nbsp;|&nbsp;&nbsp;
+          이 범위를 벗어나면 이상치로 판정
+        </div>
+      </div>
+
+      <!-- Quiz -->
+      <div class="quiz-block">
+        <div class="quiz-q">기본값(1.5배)에서 이상치는 몇 개인가요?</div>
+        <div class="quiz-options">
+          <button class="quiz-btn" onclick="answer(this,'correct','qa1')">1개</button>
+          <button class="quiz-btn" onclick="answer(this,'wrong','qa1')">2개</button>
+          <button class="quiz-btn" onclick="answer(this,'wrong','qa1')">3개</button>
+          <button class="quiz-btn" onclick="answer(this,'wrong','qa1')">없다</button>
+        </div>
+        <div class="quiz-feedback correct" id="qa1">✅ 1.5배 기준에서 스마트폰 사용 시간이 약 8.5시간인 점 1개가 이상치로 판정됩니다. 다른 학생들(대부분 0.5~5.5시간)에 비해 확연히 높은 값입니다.</div>
+      </div>
+
+      <div class="quiz-block">
+        <div class="quiz-q">슬라이더를 0.5(엄격)로 바꾸면 이상치가 어떻게 되나요?</div>
+        <div class="quiz-options">
+          <button class="quiz-btn" onclick="answer(this,'correct','qa2')">더 늘어난다</button>
+          <button class="quiz-btn" onclick="answer(this,'wrong','qa2')">더 줄어든다</button>
+          <button class="quiz-btn" onclick="answer(this,'wrong','qa2')">변화 없다</button>
+        </div>
+        <div class="quiz-feedback correct" id="qa2">✅ 기준을 엄격하게 하면 경계가 좁아져 더 많은 점이 이상치로 판정됩니다. 직접 슬라이더를 0.5로 움직여 확인해보세요!</div>
+      </div>
+
+      <div class="quiz-block">
+        <div class="quiz-q">슬라이더를 3.0(관대)으로 바꾸면?</div>
+        <div class="quiz-options">
+          <button class="quiz-btn" onclick="answer(this,'wrong','qa3')">이상치가 더 늘어난다</button>
+          <button class="quiz-btn" onclick="answer(this,'correct','qa3')">이상치가 사라지거나 줄어든다</button>
+          <button class="quiz-btn" onclick="answer(this,'wrong','qa3')">변화 없다</button>
+        </div>
+        <div class="quiz-feedback correct" id="qa3">✅ 관대한 기준에서는 경계가 넓어져 이상치가 사라지거나 매우 극단적인 값만 남습니다. 기준에 따라 판정 결과가 달라지므로, 분석 목적에 맞는 기준을 선택해야 합니다.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 이상치의 영향 -->
+  <div class="section-title"><div class="section-title-icon">⚡</div>이상치가 분석에 미치는 영향</div>
+  <div class="impact-grid">
+    <div class="impact-card">
+      <div class="impact-card-icon">📊</div>
+      <div class="impact-card-title">평균에 미치는 영향</div>
+      <div class="impact-card-desc">이상치는 평균을 크게 왜곡합니다.</div>
+      <div class="impact-example">9명 평균 수면 7.5시간인데, 한 명이 2시간 자면 → 전체 평균이 <strong>6.95시간</strong>으로 뚝 떨어짐</div>
+    </div>
+    <div class="impact-card">
+      <div class="impact-card-icon">📈</div>
+      <div class="impact-card-title">상관계수에 미치는 영향</div>
+      <div class="impact-card-desc">이상치 하나가 상관관계를 만들거나 없앨 수 있습니다.</div>
+      <div class="impact-example">위 탐정 도구에서 <strong>전체 상관계수</strong>와 <strong>이상치 제외 상관계수</strong>를 비교해보세요!</div>
+    </div>
+    <div class="impact-card">
+      <div class="impact-card-icon">📏</div>
+      <div class="impact-card-title">표준편차에 미치는 영향</div>
+      <div class="impact-card-desc">이상치는 표준편차를 부풀립니다.</div>
+      <div class="impact-example">데이터 퍼짐이 실제보다 크게 측정되어 <strong>'학생들의 차이가 크다'</strong>는 잘못된 결론 가능</div>
+    </div>
+    <div class="impact-card">
+      <div class="impact-card-icon">📉</div>
+      <div class="impact-card-title">시각화에 미치는 영향</div>
+      <div class="impact-card-desc">차트의 스케일을 왜곡합니다.</div>
+      <div class="impact-example">Y축이 이상치에 맞춰 늘어나면 나머지 데이터가 뭉개져서 <strong>패턴을 못 볼 수</strong> 있음</div>
+    </div>
+  </div>
+
+  <!-- 실습 2 -->
+  <div class="practice-box">
+    <div class="practice-header" onclick="togglePractice(this)">
+      <div class="practice-header-left">
+        <span class="practice-badge">실습 2</span>
+        <span class="practice-title-text">이상치의 영향 직접 확인하기</span>
+      </div>
+      <span class="practice-toggle">▲ 접기</span>
+    </div>
+    <div class="practice-body">
+      <p style="font-size:13.5px;color:var(--text-secondary);margin-bottom:16px;">위의 이상치 탐정 도구에서 <strong>전체 데이터 상관계수</strong>와 <strong>이상치 제외 상관계수</strong>를 비교해보세요.</p>
+
+      <div class="quiz-block">
+        <div class="quiz-q">IQR 배수를 1.5로 설정했을 때, 전체 상관계수와 이상치 제외 상관계수의 차이가 크게 느껴지나요?</div>
+        <div class="quiz-options">
+          <button class="quiz-btn" onclick="answer(this,'correct','qa4')">예, 매우 차이가 크다</button>
+          <button class="quiz-btn" onclick="answer(this,'wrong','qa4')">아니요, 거의 같다</button>
+        </div>
+        <div class="quiz-feedback correct" id="qa4">✅ 이상치를 포함하면 상관계수 약 −0.39, 제외하면 약 −0.91로 <strong>절대값 기준 0.5 이상</strong>의 큰 차이가 납니다. 이상치 단 1개가 전체 분석 결론을 완전히 바꿀 수 있습니다!</div>
+      </div>
+
+      <div class="quiz-block">
+        <div class="quiz-q">이상치가 분석 결과에 큰 영향을 줄 때, 올바른 처리 방법은?</div>
+        <div class="quiz-options">
+          <button class="quiz-btn" onclick="answer(this,'wrong','qa5')">즉시 삭제한다</button>
+          <button class="quiz-btn" onclick="answer(this,'wrong','qa5')">무시하고 분석한다</button>
+          <button class="quiz-btn" onclick="answer(this,'correct','qa5')">원인 파악 후 포함/제외 모두 분석한다</button>
+        </div>
+        <div class="quiz-feedback correct" id="qa5">✅ 올바른 순서: ① 이상치 원인 확인 → ② 이상치 포함/제외 두 가지 모두 분석 → ③ 결과를 투명하게 보고. 이상치를 무조건 삭제하면 안 됩니다!</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 처리 가이드 -->
+  <div class="section-title"><div class="section-title-icon">🗺️</div>이상치 처리 의사결정 가이드</div>
+  <div class="decision-flow">
+    <div class="decision-step">
+      <div class="decision-num">1</div>
+      <div>
+        <div class="decision-q">이상치의 원인을 알 수 있는가?</div>
+        <div class="decision-branches">
+          <div class="decision-branch"><span class="branch-yes">Yes</span>원인이 밝혀지면 2번으로</div>
+          <div class="decision-branch"><span class="branch-no">No</span>보수적 접근: 포함/제외 모두 분석해서 비교</div>
+        </div>
+      </div>
+    </div>
+    <div class="decision-step">
+      <div class="decision-num">2</div>
+      <div>
+        <div class="decision-q">입력 오류나 측정 오류인가?</div>
+        <div class="decision-branches">
+          <div class="decision-branch"><span class="branch-yes">Yes</span>원래 값으로 수정하거나, 수정 불가하면 제거</div>
+          <div class="decision-branch"><span class="branch-no">No</span>3번으로</div>
+        </div>
+      </div>
+    </div>
+    <div class="decision-step">
+      <div class="decision-num">3</div>
+      <div>
+        <div class="decision-q">분석 대상에 포함되어야 하는 사례인가?</div>
+        <div class="decision-branches">
+          <div class="decision-branch"><span class="branch-yes">Yes</span>제거하지 말고, 중앙값 등 강건한 통계를 사용</div>
+          <div class="decision-branch"><span class="branch-no">No</span>별도 분석 또는 제거 후 이유를 명시적으로 기록</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="warn-box">
+    <span class="warn-label">주의</span>
+    <div>
+      <strong>가장 나쁜 이상치 처리</strong>: 아무 이유 없이 삭제하는 것<br>
+      <strong>가장 좋은 이상치 처리</strong>: 원인을 파악하고, 포함/제외 모두 분석하고, 그 과정을 투명하게 기록하는 것
+    </div>
+  </div>
+
+  <!-- 실습 3 -->
+  <div class="practice-box">
+    <div class="practice-header" onclick="togglePractice(this)">
+      <div class="practice-header-left">
+        <span class="practice-badge">실습 3</span>
+        <span class="practice-title-text">이상치 처리 판단 연습</span>
+      </div>
+      <span class="practice-toggle">▲ 접기</span>
+    </div>
+    <div class="practice-body">
+      <p style="font-size:13.5px;color:var(--text-secondary);margin-bottom:16px;">아래 시나리오를 읽고, 이상치를 어떻게 처리할지 생각해보세요. 클릭하면 해설이 나타납니다.</p>
+      <div class="scenario-list">
+        <div class="scenario-item">
+          <div class="scenario-q" onclick="toggleScenario(this)">
+            <span class="scenario-q-text">📱 학생 설문에서 수면 시간을 <strong>'25시간'</strong>으로 응답한 학생이 있습니다.</span>
+            <span class="scenario-toggle">해설 보기 ▼</span>
+          </div>
+          <div class="scenario-a">하루는 24시간이므로 25시간은 <strong>불가능한 값</strong>입니다. 명백한 입력 오류이므로 제거하거나, 가능하다면 해당 학생에게 재확인합니다.</div>
+        </div>
+        <div class="scenario-item">
+          <div class="scenario-q" onclick="toggleScenario(this)">
+            <span class="scenario-q-text">📵 학생 200명 중 한 명이 스마트폰 사용 시간 <strong>'0시간'</strong>이라고 응답했습니다.</span>
+            <span class="scenario-toggle">해설 보기 ▼</span>
+          </div>
+          <div class="scenario-a">실제로 스마트폰이 없는 학생일 수 있습니다. <strong>이상치지만 유효한 데이터일 가능성</strong>이 높으므로, 제거하기보다 분석에 포함하되 특이 사례로 주목합니다.</div>
+        </div>
+        <div class="scenario-item">
+          <div class="scenario-q" onclick="toggleScenario(this)">
+            <span class="scenario-q-text">☕ 카페 매출 분석에서, 크리스마스 당일 매출이 <strong>평소의 5배</strong>입니다.</span>
+            <span class="scenario-toggle">해설 보기 ▼</span>
+          </div>
+          <div class="scenario-a">시즌 효과로 인한 자연스러운 현상입니다. <strong>'평소 매출'</strong>을 분석할 때는 제외할 수 있지만, <strong>'연간 매출'</strong>을 분석할 때는 반드시 포함해야 합니다. 분석 목적에 따라 처리가 달라집니다.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 요약 -->
+  <div class="summary-box">
+    <div class="summary-title">이번 레슨에서 배운 것</div>
+    <ul class="summary-list">
+      <li><strong>이상치(outlier)</strong>의 정의: 다른 데이터와 동떨어진 비정상적 값</li>
+      <li><strong>IQR 방법</strong>: Q1, Q3, IQR을 이용한 수학적 이상치 판별</li>
+      <li><strong>IQR 배수(1.5가 표준)</strong>에 따라 판정 기준이 달라짐</li>
+      <li>이상치가 <strong>평균, 상관계수, 표준편차, 시각화</strong>에 미치는 영향</li>
+      <li>이상치 처리 원칙: <strong>원인 파악 → 포함/제외 모두 분석 → 투명하게 기록</strong></li>
+    </ul>
+  </div>
+
+  <div class="nav-buttons">
+    <button class="btn btn-secondary" onclick="location.href='pattern-finding-3-2.html'">← 이전 레슨</button>
+    <div style="display:flex;align-items:center;gap:12px;color:var(--text-muted);font-size:12px;">
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:100%"></div></div>
+    </div>
+    <button class="btn btn-primary" disabled style="opacity:0.35;cursor:not-allowed;">다음 레슨 →</button>
+  </div>
+
+</div>
+</main>
+
+<script>
+// ──────────────────────────────────────────
+// DATA: 20 points, one outlier at x≈8.5
+// ──────────────────────────────────────────
+const DATA = [
+  [0.5, 9.0],[1.0, 9.0],[1.5, 8.5],[1.5, 8.0],
+  [2.0, 8.0],[2.0, 7.5],[2.5, 7.5],[2.5, 7.5],
+  [3.0, 7.0],[3.0, 7.5],[3.5, 7.0],[3.5, 6.5],
+  [4.0, 6.5],[4.0, 6.5],[4.0, 6.0],[4.5, 6.5],
+  [5.0, 6.0],[5.0, 6.0],[5.5, 6.0],[8.5, 9.0]
+];
+
+// ──────────────────────────────────────────
+// STATS HELPERS
+// ──────────────────────────────────────────
+function quartile(arr, q) {
+  const sorted = [...arr].sort((a,b)=>a-b);
+  const n = sorted.length;
+  const lo = sorted.slice(0, Math.floor(n/2));
+  const hi = sorted.slice(Math.ceil(n/2));
+  const median = a => a.length%2===0 ? (a[a.length/2-1]+a[a.length/2])/2 : a[Math.floor(a.length/2)];
+  return q===1 ? median(lo) : median(hi);
+}
+function pearson(xs, ys) {
+  const n=xs.length, mx=xs.reduce((a,b)=>a+b)/n, my=ys.reduce((a,b)=>a+b)/n;
+  const cov=xs.reduce((s,x,i)=>s+(x-mx)*(ys[i]-my),0)/n;
+  const sx=Math.sqrt(xs.reduce((s,x)=>s+(x-mx)**2,0)/n);
+  const sy=Math.sqrt(ys.reduce((s,y)=>s+(y-my)**2,0)/n);
+  return (sx*sy===0) ? 0 : cov/(sx*sy);
+}
+
+// ──────────────────────────────────────────
+// CANVAS SETUP
+// ──────────────────────────────────────────
+const canvas = document.getElementById('scatterCanvas');
+const dpr = window.devicePixelRatio || 1;
+let W, H;
+function resizeCanvas() {
+  W = canvas.parentElement.clientWidth - 40;
+  H = 260;
+  canvas.width  = W * dpr; canvas.height = H * dpr;
+  canvas.style.width = W+'px'; canvas.style.height = H+'px';
+}
+resizeCanvas();
+const ctx = canvas.getContext('2d');
+ctx.scale(dpr, dpr);
+
+const PAD = { top:20, right:30, bottom:44, left:50 };
+const xMin=0, xMax=10, yMin=5.5, yMax=10;
+
+function toC(px, py) {
+  const cW=W-PAD.left-PAD.right, cH=H-PAD.top-PAD.bottom;
+  return [PAD.left+((px-xMin)/(xMax-xMin))*cW, PAD.top+((yMax-py)/(yMax-yMin))*cH];
+}
+function toV(cx) {
+  return xMin+(cx-PAD.left)/(W-PAD.left-PAD.right)*(xMax-xMin);
+}
+
+// ──────────────────────────────────────────
+// DRAW
+// ──────────────────────────────────────────
+let hoverIdx = -1;
+let mult = 1.5;
+
+function computeOutliers(m) {
+  const xs = DATA.map(d=>d[0]);
+  const q1=quartile(xs,1), q3=quartile(xs,3), iqr=q3-q1;
+  const lo=q1-m*iqr, hi=q3+m*iqr;
+  return { q1,q3,iqr,lo,hi, outliers: DATA.map(d=>d[0]<lo||d[0]>hi) };
+}
+
+function drawChart(m) {
+  ctx.clearRect(0,0,W,H);
+  const cW=W-PAD.left-PAD.right, cH=H-PAD.top-PAD.bottom;
+  const stats = computeOutliers(m);
+
+  // grid
+  ctx.strokeStyle='#E4E9F2'; ctx.lineWidth=1;
+  for (let v=6; v<=10; v++) {
+    const [,y]=toC(0,v);
+    ctx.beginPath(); ctx.moveTo(PAD.left,y); ctx.lineTo(PAD.left+cW,y); ctx.stroke();
+    ctx.fillStyle='#9AA5B4'; ctx.font='11px Noto Sans KR'; ctx.textAlign='right';
+    ctx.fillText(v, PAD.left-6, y+4);
+  }
+  for (let v=0; v<=9; v+=1) {
+    const [x]=toC(v,0);
+    ctx.strokeStyle='#E4E9F2'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(x,PAD.top); ctx.lineTo(x,PAD.top+cH); ctx.stroke();
+    ctx.fillStyle='#9AA5B4'; ctx.font='11px Noto Sans KR'; ctx.textAlign='center';
+    ctx.fillText(v, x, H-10);
+  }
+
+  // outlier boundary lines (vertical on X axis)
+  const drawBound = (xv, label) => {
+    if (xv < xMin || xv > xMax) return;
+    const [bx] = toC(xv, 0);
+    ctx.strokeStyle='rgba(231,76,60,0.7)'; ctx.lineWidth=1.5; ctx.setLineDash([5,4]);
+    ctx.beginPath(); ctx.moveTo(bx,PAD.top); ctx.lineTo(bx,PAD.top+cH); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='rgba(231,76,60,0.85)'; ctx.font='bold 11px Noto Sans KR'; ctx.textAlign='center';
+    ctx.fillText(label, bx, PAD.top-4);
+  };
+  drawBound(stats.lo, stats.lo.toFixed(1));
+  drawBound(stats.hi, stats.hi.toFixed(1));
+
+  // dots
+  DATA.forEach(([px,py],i) => {
+    const [cx,cy]=toC(px,py);
+    const isOut = stats.outliers[i];
+    const isHov = i===hoverIdx;
+
+    if (isOut) {
+      // draw X mark
+      const r = isHov ? 9 : 7;
+      ctx.strokeStyle = '#E74C3C'; ctx.lineWidth = isHov ? 3 : 2.5;
+      ctx.beginPath(); ctx.moveTo(cx-r,cy-r); ctx.lineTo(cx+r,cy+r); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx+r,cy-r); ctx.lineTo(cx-r,cy+r); ctx.stroke();
+      if (isHov) { ctx.fillStyle='rgba(231,76,60,0.15)'; ctx.beginPath(); ctx.arc(cx,cy,12,0,Math.PI*2); ctx.fill(); }
+    } else {
+      const r = isHov ? 7 : 5;
+      ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2);
+      ctx.fillStyle = isHov ? '#1A6FE8' : 'rgba(59,111,232,0.7)';
+      ctx.fill();
+      if (isHov) { ctx.strokeStyle='#2451C7'; ctx.lineWidth=1.5; ctx.stroke(); }
+    }
+  });
+
+  // axes
+  ctx.strokeStyle='#CBD5E0'; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.moveTo(PAD.left,PAD.top); ctx.lineTo(PAD.left,PAD.top+cH); ctx.lineTo(PAD.left+cW,PAD.top+cH); ctx.stroke();
+
+  // axis labels
+  ctx.fillStyle='#4A5568'; ctx.font='12px Noto Sans KR'; ctx.textAlign='center';
+  ctx.fillText('스마트폰 사용 시간 (시간/일)', PAD.left+cW/2, H-2);
+  ctx.save(); ctx.translate(13,PAD.top+cH/2); ctx.rotate(-Math.PI/2);
+  ctx.fillText('수면 시간 (시간)', 0, 0); ctx.restore();
+}
+
+function updateStats(m) {
+  const stats = computeOutliers(m);
+  const allXs=DATA.map(d=>d[0]), allYs=DATA.map(d=>d[1]);
+  const rAll = pearson(allXs,allYs);
+  const clean=DATA.filter((_,i)=>!stats.outliers[i]);
+  const nOut=stats.outliers.filter(Boolean).length;
+  document.getElementById('corrAll').textContent = rAll.toFixed(3);
+  document.getElementById('corrAllN').textContent = DATA.length+'개 데이터';
+
+  if (clean.length>2) {
+    const rClean=pearson(clean.map(d=>d[0]),clean.map(d=>d[1]));
+    document.getElementById('corrClean').textContent = rClean.toFixed(3);
+  } else {
+    document.getElementById('corrClean').textContent = 'N/A';
+  }
+  document.getElementById('corrCleanN').textContent =
+    clean.length+'개 데이터 (이상치 '+nOut+'개 제외)';
+  document.getElementById('iqrInfo').textContent =
+    `IQR = Q3(${stats.q3.toFixed(2)}) − Q1(${stats.q1.toFixed(2)}) = ${stats.iqr.toFixed(2)}  |  정상 범위: ${stats.lo.toFixed(1)} ~ ${stats.hi.toFixed(1)}  |  이 범위를 벗어나면 이상치로 판정`;
+}
+
+// Precompute canvas positions for hit testing
+let ptCoords = [];
+function recomputeCoords() { ptCoords = DATA.map(([px,py])=>toC(px,py)); }
+recomputeCoords();
+
+// Init
+drawChart(mult);
+updateStats(mult);
+
+// Slider
+const slider = document.getElementById('iqrSlider');
+slider.addEventListener('input', () => {
+  mult = parseFloat(slider.value);
+  document.getElementById('sliderVal').textContent = mult.toFixed(1);
+  drawChart(mult);
+  updateStats(mult);
+});
+
+// Tooltip
+const tooltip = document.getElementById('tooltip');
+canvas.addEventListener('mousemove', e => {
+  const rect=canvas.getBoundingClientRect();
+  const mx=e.clientX-rect.left, my=e.clientY-rect.top;
+  let found=-1, minD=14;
+  ptCoords.forEach(([cx,cy],i)=>{
+    const d=Math.hypot(cx-mx,cy-my);
+    if(d<minD){minD=d;found=i;}
+  });
+  if(found!==hoverIdx){hoverIdx=found;drawChart(mult);}
+  if(found>=0){
+    const [px,py]=DATA[found];
+    const stats=computeOutliers(mult);
+    const tag=stats.outliers[found]?'🚨 이상치':'✅ 정상';
+    tooltip.innerHTML=`스마트폰: ${px}시간 / 수면: ${py}시간<br>${tag}`;
+    tooltip.style.display='block';
+    tooltip.style.left=(e.clientX+14)+'px';
+    tooltip.style.top=(e.clientY-40)+'px';
+  } else {
+    tooltip.style.display='none';
+  }
+});
+canvas.addEventListener('mouseleave',()=>{ tooltip.style.display='none'; hoverIdx=-1; drawChart(mult); });
+
+// ──────────────────────────────────────────
+// QUIZ
+// ──────────────────────────────────────────
+function answer(btn, result, fbId) {
+  const block=btn.closest('.quiz-block');
+  if(block.dataset.answered) return;
+  block.dataset.answered='1';
+  block.querySelectorAll('.quiz-btn').forEach(b=>{
+    b.disabled=true;
+    if(b===btn) b.classList.add(result);
+    else if(result==='wrong'&&b.onclick&&b.onclick.toString().includes("'correct'"))
+      b.classList.add('reveal-correct');
+  });
+  const fb=document.getElementById(fbId);
+  fb.style.display='block';
+  fb.className='quiz-feedback '+result;
+}
+
+function toggleScenario(header) {
+  const ans=header.nextElementSibling;
+  const tog=header.querySelector('.scenario-toggle');
+  const open=ans.classList.contains('show');
+  ans.classList.toggle('show');
+  tog.textContent=open?'해설 보기 ▼':'해설 숨기기 ▲';
+}
+
+function togglePractice(header) {
+  const body=header.nextElementSibling;
+  const tog=header.querySelector('.practice-toggle');
+  const open=body.style.display!=='none';
+  body.style.display=open?'none':'block';
+  tog.textContent=open?'▼ 펼치기':'▲ 접기';
+}
+</script>
+</body>
+</html>

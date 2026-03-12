@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3-2 패턴 찾기 | 인공지능 기초 with 데이터 분석</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary: #3B6FE8; --primary-light: #EEF3FF; --primary-dark: #2451C7;
+    --accent: #FF6B35; --accent-light: #FFF0EB;
+    --green: #2ECC71; --green-light: #E8F8F0;
+    --red: #E74C3C; --red-light: #FDECEA;
+    --yellow: #F1C40F; --yellow-light: #FEFCE8;
+    --teal: #0EA5A0; --teal-light: #EDFAFA;
+    --purple: #8B5CF6; --purple-light: #F3F0FF;
+    --text-primary: #1A1F36; --text-secondary: #4A5568; --text-muted: #9AA5B4;
+    --bg: #F7F8FC; --card-bg: #FFFFFF; --border: #E4E9F2;
+    --radius: 12px;
+    --shadow: 0 2px 12px rgba(59,111,232,0.08);
+    --shadow-md: 0 4px 20px rgba(59,111,232,0.12);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: var(--text-primary); min-height: 100vh; font-size: 15px; line-height: 1.7; }
+
+  /* TOPBAR */
+  .topbar { position: sticky; top: 0; z-index: 200; background: #fff; border-bottom: 1px solid var(--border); padding: 0 32px; height: 52px; display: flex; align-items: center; justify-content: space-between; }
+  .topbar-home { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .topbar-logo-icon { width: 30px; height: 30px; background: linear-gradient(135deg, var(--primary), #6B9DFF); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+  .topbar-logo-text { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+  .topbar-back-btn { background: var(--primary-light); color: var(--primary); border: 1px solid #C5D5FF; border-radius: 8px; padding: 6px 14px; font-size: 13px; font-weight: 600; text-decoration: none; transition: all 0.15s; }
+  .topbar-back-btn:hover { background: var(--primary); color: white; }
+
+  /* LAYOUT */
+  .main { width: 100%; }
+  .content { max-width: 860px; margin: 0 auto; padding: 40px 40px 80px; }
+
+  /* BREADCRUMB */
+  .breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); margin-bottom: 24px; }
+  .breadcrumb span { color: var(--accent); font-weight: 500; }
+
+  /* LESSON HEADER */
+  .lesson-header { background: linear-gradient(135deg, #0D7A75 0%, #1ABC9C 100%); border-radius: 16px; padding: 32px 36px; color: white; margin-bottom: 32px; position: relative; overflow: hidden; }
+  .lesson-header::before { content: ''; position: absolute; top: -40px; right: -40px; width: 180px; height: 180px; border-radius: 50%; background: rgba(255,255,255,0.06); }
+  .lesson-meta { display: flex; align-items: center; gap: 10px; font-size: 12px; opacity: 0.85; margin-bottom: 10px; }
+  .lesson-meta-badge { background: rgba(255,255,255,0.2); border-radius: 20px; padding: 3px 10px; font-weight: 500; }
+  .lesson-title { font-size: 28px; font-weight: 700; margin-bottom: 6px; }
+  .lesson-subtitle { font-size: 15px; opacity: 0.85; }
+
+  /* TEXT / INTRO */
+  .intro-text { background: var(--card-bg); border-radius: var(--radius); padding: 22px 28px; border: 1px solid var(--border); color: var(--text-secondary); font-size: 15px; line-height: 1.85; margin-bottom: 28px; }
+
+  /* SECTION TITLE */
+  .section-title { font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 32px 0 16px; display: flex; align-items: center; gap: 10px; padding-bottom: 12px; border-bottom: 2px solid #C8F0E8; }
+  .section-title-icon { width: 32px; height: 32px; background: #E0FAF5; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+
+  /* CONCEPT BOX */
+  .concept-box { background: linear-gradient(135deg, var(--primary-light), #F5F0FF); border: 1.5px solid #C5D5FF; border-radius: var(--radius); padding: 20px 26px; margin-bottom: 28px; }
+  .concept-label { display: inline-flex; align-items: center; gap: 6px; background: var(--primary); color: white; font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px; margin-bottom: 12px; }
+  .concept-list { list-style: none; }
+  .concept-list li { font-size: 14px; color: var(--text-secondary); padding: 6px 0; display: flex; align-items: flex-start; gap: 10px; border-bottom: 1px dashed #C5D5FF; line-height: 1.65; }
+  .concept-list li:last-child { border-bottom: none; }
+  .concept-num { font-weight: 700; color: var(--primary); flex-shrink: 0; }
+
+  /* PATTERN CARDS */
+  .corr-cards { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 24px; }
+  .corr-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; text-align: center; }
+  .corr-card-icon { font-size: 28px; margin-bottom: 8px; }
+  .corr-card-title { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; }
+  .corr-card-desc  { font-size: 12px; color: var(--text-secondary); line-height: 1.6; }
+
+  /* INFO BOXES */
+  .tip-box  { background: var(--yellow-light); border: 1.5px solid #F9E04B; border-radius: var(--radius); padding: 14px 20px; margin: 16px 0; display: flex; gap: 10px; font-size: 13.5px; color: #6B5000; }
+  .tip-label { background: var(--yellow); color: #5A4000; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 6px; flex-shrink: 0; margin-top: 3px; }
+  .note-box { background: var(--primary-light); border: 1.5px solid #C5D5FF; border-radius: var(--radius); padding: 14px 20px; margin: 16px 0; display: flex; gap: 10px; font-size: 13.5px; color: var(--text-secondary); }
+  .note-label { background: var(--primary); color: white; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 6px; flex-shrink: 0; margin-top: 3px; }
+  .warn-box { background: var(--red-light); border: 1.5px solid #FAD0CC; border-radius: var(--radius); padding: 14px 20px; margin: 16px 0; display: flex; gap: 10px; font-size: 13.5px; color: #7A2020; }
+  .warn-label { background: var(--red); color: white; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 6px; flex-shrink: 0; margin-top: 3px; }
+  .think-box { background: var(--purple-light); border: 1.5px solid #D4C8FF; border-radius: var(--radius); padding: 16px 22px; margin: 16px 0; }
+  .think-label { font-size: 11px; font-weight: 700; color: var(--purple); margin-bottom: 8px; }
+  .think-list { list-style: none; }
+  .think-list li { font-size: 13.5px; color: var(--text-secondary); padding: 3px 0; display: flex; gap: 8px; }
+  .think-list li::before { content: "•"; color: var(--purple); flex-shrink: 0; }
+
+  /* PRACTICE BOX */
+  .practice-box { border: 1.5px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 28px; }
+  .practice-header { background: var(--text-primary); color: white; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; }
+  .practice-header-left { display: flex; align-items: center; gap: 10px; }
+  .practice-badge { background: var(--teal); color: white; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 12px; }
+  .practice-title-text { font-size: 15px; font-weight: 600; }
+  .practice-toggle { font-size: 12px; opacity: 0.75; }
+  .practice-body { background: var(--card-bg); padding: 24px 28px; }
+
+  /* CHART CONTAINER */
+  .chart-wrap { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 20px; position: relative; }
+  .chart-title { text-align: center; font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 16px; }
+  canvas { display: block; max-width: 100%; cursor: crosshair; }
+
+  /* TOOLTIP */
+  .chart-tooltip { position: fixed; background: rgba(26,31,54,0.92); color: white; padding: 7px 12px; border-radius: 8px; font-size: 12.5px; font-weight: 600; pointer-events: none; display: none; z-index: 999; white-space: nowrap; line-height: 1.5; box-shadow: 0 4px 14px rgba(0,0,0,0.2); }
+
+  /* QUIZ */
+  .quiz-block { margin-bottom: 20px; }
+  .quiz-q { font-size: 14.5px; font-weight: 600; color: var(--text-primary); margin-bottom: 10px; display: flex; gap: 8px; align-items: flex-start; }
+  .quiz-q::before { content: 'Q'; background: var(--teal); color: white; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 5px; flex-shrink: 0; margin-top: 2px; }
+  .quiz-options { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+  .quiz-btn { padding: 8px 16px; border-radius: 8px; border: 1.5px solid var(--border); background: white; font-size: 13px; font-weight: 500; cursor: pointer; font-family: 'Noto Sans KR', sans-serif; color: var(--text-secondary); transition: all 0.15s; }
+  .quiz-btn:hover:not(:disabled) { border-color: var(--teal); color: var(--teal); background: var(--teal-light); }
+  .quiz-btn.correct { background: var(--green-light); border-color: var(--green); color: #1A7A44; font-weight: 700; }
+  .quiz-btn.wrong   { background: var(--red-light); border-color: var(--red); color: var(--red); font-weight: 700; }
+  .quiz-btn.reveal-correct { background: var(--green-light); border-color: var(--green); color: #1A7A44; }
+  .quiz-btn:disabled { cursor: default; }
+  .quiz-feedback { display: none; padding: 12px 16px; border-radius: 8px; font-size: 13.5px; line-height: 1.65; animation: fadeIn 0.25s ease; margin-top: 4px; }
+  .quiz-feedback.correct { background: var(--green-light); border: 1px solid var(--green); color: #1A5A30; }
+  .quiz-feedback.wrong   { background: var(--red-light);   border: 1px solid var(--red);   color: #6A1A1A; }
+
+  /* CHECKLIST STEPS */
+  .checklist-steps { margin-bottom: 24px; }
+  .check-step { display: flex; align-items: flex-start; gap: 16px; padding: 14px 0; border-bottom: 1px dashed var(--border); }
+  .check-step:last-child { border-bottom: none; }
+  .check-step-num { width: 30px; height: 30px; border-radius: 50%; background: var(--teal); color: white; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+  .check-step-title { font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 3px; }
+  .check-step-desc  { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+
+  /* SUMMARY */
+  .summary-box { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 26px 30px; margin-bottom: 24px; }
+  .summary-title { font-size: 15px; font-weight: 700; color: var(--text-primary); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .summary-title::before { content: ''; width: 4px; height: 18px; background: var(--accent); border-radius: 2px; }
+  .summary-list { list-style: none; }
+  .summary-list li { font-size: 14px; color: var(--text-secondary); padding: 8px 0; display: flex; align-items: flex-start; gap: 10px; border-bottom: 1px dashed var(--border); }
+  .summary-list li:last-child { border-bottom: none; }
+  .summary-list li::before { content: '✓'; color: var(--green); font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+
+  /* NAV */
+  .nav-buttons { display: flex; justify-content: space-between; align-items: center; margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--border); }
+  .btn { padding: 12px 24px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'Noto Sans KR', sans-serif; transition: all 0.15s; display: flex; align-items: center; gap: 8px; border: none; }
+  .btn-secondary { background: var(--bg); color: var(--text-secondary); border: 1px solid var(--border); }
+  .btn-secondary:hover { background: var(--border); }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: #E85A20; box-shadow: 0 4px 14px rgba(255,107,53,0.3); transform: translateY(-1px); }
+  .progress-bar-wrap { flex: 1; max-width: 200px; margin: 0 20px; background: var(--border); border-radius: 4px; height: 6px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: var(--accent); border-radius: 4px; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="topbar-home" href="index.html">
+    <div class="topbar-logo-icon">📊</div>
+    <div class="topbar-logo-text">인공지능 기초 with 데이터 분석</div>
+  </a>
+  <a class="topbar-back-btn" href="index.html">⌂ 메인으로</a>
+</header>
+
+<!-- 전역 툴팁 -->
+<div class="chart-tooltip" id="tooltip"></div>
+
+<main class="main">
+<div class="content">
+
+  <div class="breadcrumb">홈 › 데이터 탐색하기 › <span>3-2 패턴 찾기</span></div>
+
+  <div class="lesson-header">
+    <div class="lesson-meta">
+      <span class="lesson-meta-badge">📖 3단원 · 3-2</span>
+      <span>⏱ 20분</span>
+    </div>
+    <div class="lesson-title">패턴 찾기</div>
+    <div class="lesson-subtitle">데이터에서 패턴 발견</div>
+  </div>
+
+  <div class="intro-text">
+    숫자 표만 보고 패턴을 찾는 것은 매우 어렵습니다. 하지만 같은 데이터를 <strong>차트(그래프)로 그리면</strong> 숨어 있던 패턴이 눈에 바로 보이기 시작합니다.<br><br>
+    이번 레슨에서는 학교 설문 데이터를 시각화한 차트를 보면서, <strong>추세(trend), 비교(comparison), 상관관계(correlation)</strong> 패턴을 찾는 연습을 합니다.
+  </div>
+
+  <!-- 핵심 개념 -->
+  <div class="section-title"><div class="section-title-icon">🔍</div>핵심 개념</div>
+  <div class="concept-box">
+    <div class="concept-label">📋 데이터에서 찾을 수 있는 3가지 패턴</div>
+    <ul class="concept-list">
+      <li><span class="concept-num">1.</span><div><strong>추세(Trend)</strong>: 시간이나 순서에 따른 변화 방향 (증가? 감소? 유지?)</div></li>
+      <li><span class="concept-num">2.</span><div><strong>비교(Comparison)</strong>: 그룹 간의 차이 (남 vs 여, 1학년 vs 3학년)</div></li>
+      <li><span class="concept-num">3.</span><div><strong>상관관계(Correlation)</strong>: 두 변수가 함께 변하는 경향 (A가 커지면 B도 커진다?)</div></li>
+    </ul>
+  </div>
+
+  <!-- 패턴 1 -->
+  <div class="section-title"><div class="section-title-icon">📊</div>패턴 1: 그룹 간 비교</div>
+  <p style="font-size:14px;color:var(--text-secondary);margin-bottom:16px;">먼저 가장 직관적인 패턴인 <strong>비교</strong>를 살펴봅시다. 학년별로 스마트폰 사용 시간에 차이가 있을까요?</p>
+
+  <div class="practice-box">
+    <div class="practice-header" onclick="togglePractice(this)">
+      <div class="practice-header-left">
+        <span class="practice-badge">실습 1</span>
+        <span class="practice-title-text">학년별 스마트폰 사용 시간</span>
+      </div>
+      <span class="practice-toggle">▲ 접기</span>
+    </div>
+    <div class="practice-body">
+      <p style="font-size:13.5px;color:var(--text-secondary);margin-bottom:14px;">아래 차트를 보고 질문에 답해보세요. <strong>막대 위에 마우스를 올리면 정확한 수치</strong>가 나타납니다.</p>
+      <div class="chart-wrap">
+        <div class="chart-title">학년별 평균 스마트폰 사용 시간</div>
+        <canvas id="chart1" width="780" height="280"></canvas>
+      </div>
+
+      <div class="quiz-block">
+        <div class="quiz-q">어느 학년이 스마트폰을 가장 많이 사용하나요?</div>
+        <div class="quiz-options">
+          <button class="quiz-btn" onclick="answer(this,'wrong','q1')">1학년</button>
+          <button class="quiz-btn" onclick="answer(this,'wrong','q1')">2학년</button>
+          <button class="quiz-btn" onclick="answer(this,'correct','q1')">3학년</button>
+        </div>
+        <div class="quiz-feedback correct" id="q1">✅ 3학년이 평균 4.5시간으로 가장 많이 사용합니다. 학년이 올라갈수록 사용 시간이 증가하는 추세도 보입니다.</div>
+      </div>
+
+      <div class="quiz-block">
+        <div class="quiz-q">1학년과 3학년의 차이는 약 몇 시간인가요?</div>
+        <div class="quiz-options">
+          <button class="quiz-btn" onclick="answer(this,'wrong','q2')">약 0.5시간</button>
+          <button class="quiz-btn" onclick="answer(this,'wrong','q2')">약 1.0시간</button>
+          <button class="quiz-btn" onclick="answer(this,'correct','q2')">약 1.3시간</button>
+          <button class="quiz-btn" onclick="answer(this,'wrong','q2')">약 2.0시간</button>
+        </div>
+        <div class="quiz-feedback correct" id="q2">✅ 4.5 - 3.2 = 1.3시간 차이입니다. 학년 간 약 0.6~0.7시간씩 증가하는 패턴이 보입니다.</div>
+      </div>
+
+      <div class="think-box">
+        <div class="think-label">💭 생각해보기</div>
+        <ul class="think-list">
+          <li>"학년이 올라가면 스마트폰 사용이 늘어난다"고 단정 지을 수 있을까요? 이것은 <strong>상관관계일 뿐, 인과관계가 아닙니다.</strong> 나이가 들면서 자율성이 높아지거나 교우 관계가 복잡해지는 등 다른 요인이 작용할 수 있습니다.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 패턴 2 -->
+  <div class="section-title"><div class="section-title-icon">📈</div>패턴 2: 분포 비교</div>
+  <p style="font-size:14px;color:var(--text-secondary);margin-bottom:16px;">평균만 비교하면 놓치는 정보가 있습니다. <strong>분포를 함께 보면</strong> 훨씬 풍부한 이야기를 읽어낼 수 있습니다.</p>
+
+  <div class="practice-box">
+    <div class="practice-header" onclick="togglePractice(this)">
+      <div class="practice-header-left">
+        <span class="practice-badge">실습 2</span>
+        <span class="practice-title-text">성별 만족도 분포 비교</span>
+      </div>
+      <span class="practice-toggle">▲ 접기</span>
+    </div>
+    <div class="practice-body">
+      <p style="font-size:13.5px;color:var(--text-secondary);margin-bottom:14px;">남녀 학생의 학교생활 만족도(1~10) 분포를 히스토그램으로 비교해보세요. <strong>막대 위에 마우스를 올리면 인원수가 나타납니다.</strong></p>
+      <div class="chart-wrap">
+        <div class="chart-title">성별 학교생활 만족도 분포</div>
+        <canvas id="chart2" width="780" height="300"></canvas>
+      </div>
+
+      <div class="quiz-block">
+        <div class="quiz-q">전반적으로 어느 쪽의 만족도가 더 높아 보이나요?</div>
+        <div class="quiz-options">
+          <button class="quiz-btn" onclick="answer(this,'wrong','q3')">남학생이 더 높다</button>
+          <button class="quiz-btn" onclick="answer(this,'correct','q3')">여학생이 더 높다</button>
+          <button class="quiz-btn" onclick="answer(this,'wrong','q3')">비슷하다</button>
+        </div>
+        <div class="quiz-feedback correct" id="q3">✅ 여학생의 분포가 오른쪽(높은 점수)에 더 집중되어 있습니다. 남학생은 상대적으로 낮은 점수에도 분포가 퍼져 있습니다.</div>
+      </div>
+
+      <div class="quiz-block">
+        <div class="quiz-q">남학생의 만족도 분포에서 가장 많은 학생이 응답한 구간은?</div>
+        <div class="quiz-options">
+          <button class="quiz-btn" onclick="answer(this,'wrong','q4')">3~5점</button>
+          <button class="quiz-btn" onclick="answer(this,'correct','q4')">5~7점</button>
+          <button class="quiz-btn" onclick="answer(this,'wrong','q4')">7~9점</button>
+        </div>
+        <div class="quiz-feedback correct" id="q4">✅ 남학생은 5~7점 구간에 가장 많이 분포하고 있습니다. 히스토그램에서 가장 높은 막대의 위치를 확인하세요.</div>
+      </div>
+
+      <div class="note-box">
+        <span class="note-label">참고</span>
+        <div>히스토그램의 봉우리(peak) 위치와 퍼짐 정도를 비교하면 두 그룹의 차이를 더 잘 이해할 수 있습니다.<br>
+        • 봉우리가 오른쪽에 있다 → 전반적으로 값이 높은 편<br>
+        • 분포가 넓게 퍼져 있다 → 사람마다 편차가 큰 편</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 패턴 3 -->
+  <div class="section-title"><div class="section-title-icon">🔀</div>패턴 3: 상관관계</div>
+  <p style="font-size:14px;color:var(--text-secondary);margin-bottom:16px;">두 변수 사이에 "함께 변하는 경향"이 있는지를 살펴보는 것이 <strong>상관관계 분석</strong>입니다. 산점도(scatter plot)가 이를 보여주는 가장 좋은 도구입니다.</p>
+
+  <div class="corr-cards">
+    <div class="corr-card">
+      <div class="corr-card-icon">↗️</div>
+      <div class="corr-card-title">양의 상관</div>
+      <div class="corr-card-desc">X가 커지면 Y도 커진다<br><span style="color:var(--text-muted)">예) 키와 체중</span></div>
+    </div>
+    <div class="corr-card">
+      <div class="corr-card-icon">↘️</div>
+      <div class="corr-card-title">음의 상관</div>
+      <div class="corr-card-desc">X가 커지면 Y는 작아진다<br><span style="color:var(--text-muted)">예) 스마트폰과 수면</span></div>
+    </div>
+    <div class="corr-card">
+      <div class="corr-card-icon">🔀</div>
+      <div class="corr-card-title">상관 없음</div>
+      <div class="corr-card-desc">X와 Y 사이에 패턴이 없다<br><span style="color:var(--text-muted)">예) 신발 사이즈와 시험 점수</span></div>
+    </div>
+  </div>
+
+  <div class="practice-box">
+    <div class="practice-header" onclick="togglePractice(this)">
+      <div class="practice-header-left">
+        <span class="practice-badge">실습 3</span>
+        <span class="practice-title-text">스마트폰 사용과 수면 시간의 관계</span>
+      </div>
+      <span class="practice-toggle">▲ 접기</span>
+    </div>
+    <div class="practice-body">
+      <p style="font-size:13.5px;color:var(--text-secondary);margin-bottom:14px;">아래 산점도에서 점 하나가 학생 한 명을 나타냅니다. X축은 스마트폰 사용 시간, Y축은 수면 시간입니다. <strong>점에 마우스를 올리면 해당 학생의 수치가 나타납니다.</strong></p>
+      <div class="chart-wrap">
+        <div class="chart-title">스마트폰 사용 시간 vs 수면 시간</div>
+        <canvas id="chart3" width="780" height="320"></canvas>
+      </div>
+
+      <div class="quiz-block">
+        <div class="quiz-q">점들의 전체적인 방향은?</div>
+        <div class="quiz-options">
+          <button class="quiz-btn" onclick="answer(this,'wrong','q5')">왼쪽 아래→오른쪽 위 (양의 상관)</button>
+          <button class="quiz-btn" onclick="answer(this,'correct','q5')">왼쪽 위→오른쪽 아래 (음의 상관)</button>
+          <button class="quiz-btn" onclick="answer(this,'wrong','q5')">특별한 패턴 없음</button>
+        </div>
+        <div class="quiz-feedback correct" id="q5">✅ 점들이 전반적으로 왼쪽 위에서 오른쪽 아래 방향입니다. 스마트폰 사용 시간이 길수록 수면 시간이 짧아지는 <strong>음의 상관관계</strong>가 보입니다.</div>
+      </div>
+
+      <div class="quiz-block">
+        <div class="quiz-q">스마트폰을 1시간 미만 사용하는 학생들의 수면 시간은 대체로?</div>
+        <div class="quiz-options">
+          <button class="quiz-btn" onclick="answer(this,'wrong','q6')">6시간 미만</button>
+          <button class="quiz-btn" onclick="answer(this,'wrong','q6')">7~8시간</button>
+          <button class="quiz-btn" onclick="answer(this,'correct','q6')">8시간 이상</button>
+        </div>
+        <div class="quiz-feedback correct" id="q6">✅ X축 1 부근의 점들은 Y축 8.5~9시간 근처에 위치합니다. 스마트폰 사용이 적은 학생은 상대적으로 수면 시간이 긴 편입니다.</div>
+      </div>
+
+      <div class="quiz-block">
+        <div class="quiz-q">"스마트폰을 줄이면 잠을 더 잘 수 있다"고 결론 내릴 수 있을까요?</div>
+        <div class="quiz-options">
+          <button class="quiz-btn" onclick="answer(this,'wrong','q7')">예, 확실히 그렇다</button>
+          <button class="quiz-btn" onclick="answer(this,'correct','q7')">아니요, 상관관계이지 인과관계가 아니다</button>
+        </div>
+        <div class="quiz-feedback correct" id="q7">✅ 상관관계는 인과관계가 아닙니다! 스마트폰 사용이 수면을 줄이는 것일 수도 있지만, 반대로 잠이 안 와서 스마트폰을 하는 것일 수도 있고, 제3의 요인(스트레스 등)이 둘 다에 영향을 줄 수도 있습니다.</div>
+      </div>
+
+      <div class="warn-box">
+        <span class="warn-label">주의</span>
+        <div><strong>"상관관계는 인과관계가 아니다"</strong> — 아이스크림 판매량과 익사 사고 수는 강한 양의 상관을 보이지만, 아이스크림이 익사를 유발하는 것은 아닙니다. 여름이라는 공통 원인(교란 변수)이 둘 다 높이는 것이죠.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 패턴 4 -->
+  <div class="section-title"><div class="section-title-icon">📋</div>패턴 4: 복합 비교</div>
+  <p style="font-size:14px;color:var(--text-secondary);margin-bottom:16px;">여러 변수를 함께 비교하면 더 깊은 통찰을 얻을 수 있습니다. 학년별로 여러 활동의 시간 배분이 어떻게 다른지 비교해봅시다.</p>
+
+  <div class="practice-box">
+    <div class="practice-header" onclick="togglePractice(this)">
+      <div class="practice-header-left">
+        <span class="practice-badge">실습 4</span>
+        <span class="practice-title-text">학년별 생활 시간 비교</span>
+      </div>
+      <span class="practice-toggle">▲ 접기</span>
+    </div>
+    <div class="practice-body">
+      <p style="font-size:13.5px;color:var(--text-secondary);margin-bottom:14px;">학년별 평균 스마트폰 사용, 공부, 운동 시간을 비교하는 차트입니다. <strong>막대 위에 마우스를 올리면 정확한 수치가 나타납니다.</strong></p>
+      <div class="chart-wrap">
+        <div class="chart-title">학년별 평균 활동 시간</div>
+        <canvas id="chart4" width="780" height="300"></canvas>
+      </div>
+
+      <div class="quiz-block">
+        <div class="quiz-q">학년이 올라가면서 줄어드는 활동은?</div>
+        <div class="quiz-options">
+          <button class="quiz-btn" onclick="answer(this,'wrong','q8')">스마트폰</button>
+          <button class="quiz-btn" onclick="answer(this,'wrong','q8')">공부</button>
+          <button class="quiz-btn" onclick="answer(this,'correct','q8')">운동</button>
+        </div>
+        <div class="quiz-feedback correct" id="q8">✅ 운동 일수가 1학년 3.5일에서 2학년 3.0일, 3학년 2.3일로 감소합니다. 학년이 올라갈수록 운동할 시간이 줄어드는 것으로 보입니다.</div>
+      </div>
+
+      <div class="quiz-block">
+        <div class="quiz-q">이 차트에서 가장 주목할 만한 패턴은?</div>
+        <div class="quiz-options">
+          <button class="quiz-btn" onclick="answer(this,'correct','q9')">스마트폰과 공부 시간이 함께 증가</button>
+          <button class="quiz-btn" onclick="answer(this,'wrong','q9')">운동 시간만 감소하고 나머지는 증가</button>
+          <button class="quiz-btn" onclick="answer(this,'wrong','q9')">모든 활동이 비슷하게 변화</button>
+        </div>
+        <div class="quiz-feedback correct" id="q9">✅ 스마트폰과 공부 시간은 학년이 올라가면 증가하는 반면, 운동 일수는 오히려 감소합니다. 학년이 높아지면 학업 부담이 커지면서 운동 시간이 줄어드는 것일 수 있습니다.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3단계 -->
+  <div class="section-title"><div class="section-title-icon">✅</div>차트에서 패턴을 찾는 3단계</div>
+  <div class="checklist-steps">
+    <div class="check-step"><div class="check-step-num">1</div><div><div class="check-step-title">전체를 훑어보기</div><div class="check-step-desc">축 제목, 범례, 단위를 먼저 확인합니다. '이 차트가 무엇을 보여주려는 건지' 파악하세요.</div></div></div>
+    <div class="check-step"><div class="check-step-num">2</div><div><div class="check-step-title">눈에 띄는 점 찾기</div><div class="check-step-desc">가장 높은/낮은 값, 갑자기 변하는 구간, 다른 것과 다른 점을 찾습니다.</div></div></div>
+    <div class="check-step"><div class="check-step-num">3</div><div><div class="check-step-title">패턴을 문장으로 표현하기</div><div class="check-step-desc">'~할수록 ~한다', '~보다 ~이 더 크다' 등 발견한 패턴을 말로 설명해보세요.</div></div></div>
+  </div>
+
+  <div class="tip-box">
+    <span class="tip-label">TIP</span>
+    <div>차트를 볼 때 항상 스스로에게 물어보세요: <strong>"왜?"</strong> (이런 패턴이 나타나는 이유는?) · <strong>"정말?"</strong> (다른 설명은 없을까?) · <strong>"그래서?"</strong> (이 패턴의 의미와 행동은?)</div>
+  </div>
+
+  <!-- 요약 -->
+  <div class="summary-box">
+    <div class="summary-title">이번 레슨에서 배운 것</div>
+    <ul class="summary-list">
+      <li>데이터에서 찾을 수 있는 <strong>3가지 패턴</strong>: 추세, 비교, 상관관계</li>
+      <li><strong>막대 차트</strong>를 활용한 그룹 간 비교</li>
+      <li><strong>히스토그램</strong>을 활용한 분포 비교</li>
+      <li><strong>산점도</strong>를 활용한 상관관계 파악</li>
+      <li><strong>"상관관계는 인과관계가 아니다"</strong>라는 핵심 원칙</li>
+      <li>차트에서 패턴을 찾는 <strong>3단계 방법</strong></li>
+    </ul>
+  </div>
+
+  <div class="nav-buttons">
+    <button class="btn btn-secondary" onclick="location.href='data-reading-3-1.html'">← 이전 레슨</button>
+    <div style="display:flex;align-items:center;gap:12px;color:var(--text-muted);font-size:12px;">
+      <span>8 / 8</span>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:100%"></div></div>
+      <span>100% 완료</span>
+    </div>
+    <button class="btn btn-primary" onclick="location.href='outlier-detective-3-3.html'">다음 레슨 →</button>
+  </div>
+
+</div>
+</main>
+
+<script>
+// ──────────────────────────────────────────
+// SCATTER DATA (200 students)
+// ──────────────────────────────────────────
+const SCATTER = [[3.6,7.5],[4.5,7.1],[2.1,8.9],[4.7,6.5],[1.1,8.8],[3.3,4.4],[0.5,9.2],[3.8,8.2],[4.7,4.4],[2.8,7.7],[3.5,7.5],[8.0,8.9],[3.8,6.3],[2.8,7.4],[2.7,6.8],[5.4,7.5],[3.0,5.3],[2.7,9.4],[5.7,4.0],[2.1,8.7],[3.4,7.0],[3.6,8.2],[2.2,7.0],[4.0,4.9],[4.4,6.8],[4.7,4.0],[3.3,6.9],[4.2,6.1],[4.1,8.2],[2.7,7.1],[2.8,8.0],[4.7,6.8],[2.5,6.4],[4.4,4.9],[2.6,8.7],[2.1,9.4],[1.2,4.5],[1.0,8.0],[2.8,6.8],[4.0,6.8],[2.5,7.5],[2.7,7.2],[4.3,6.8],[4.6,7.8],[3.2,8.0],[5.5,5.2],[2.6,7.5],[1.7,9.7],[1.7,10.0],[2.7,8.8],[3.1,7.6],[4.5,4.0],[4.5,8.3],[4.8,5.7],[2.1,7.7],[2.2,8.0],[5.0,5.6],[0.6,8.3],[3.6,7.2],[1.5,7.3],[2.9,6.4],[5.2,4.0],[5.8,5.6],[1.5,7.5],[3.1,8.8],[2.2,5.9],[4.5,7.2],[4.2,5.0],[5.0,7.4],[4.5,6.1],[2.4,8.7],[4.6,6.7],[2.2,6.3],[5.3,6.8],[2.4,9.8],[4.5,4.0],[3.3,5.9],[7.5,8.9],[2.4,7.2],[3.9,8.1],[2.5,7.2],[3.4,8.4],[0.5,7.7],[3.1,7.8],[6.0,5.1],[3.9,6.5],[3.2,7.2],[4.7,8.2],[3.6,8.0],[3.4,4.9],[1.4,8.1],[7.2,4.0],[3.5,10.0],[4.0,6.0],[4.2,6.4],[5.5,6.0],[3.0,8.8],[2.7,8.9],[4.4,7.0],[3.5,7.3],[3.6,4.0],[3.1,7.0],[0.7,4.5],[2.4,9.2],[5.0,4.5],[5.3,6.2],[2.5,8.4],[3.1,9.1],[6.1,6.6],[1.3,9.6],[6.3,5.2],[3.3,5.7],[2.6,7.7],[3.3,5.6],[5.1,7.0],[4.2,6.6],[4.5,6.8],[2.7,9.6],[3.5,7.8],[3.3,7.7],[3.1,7.6],[5.7,5.3],[3.0,7.8],[3.5,6.9],[2.7,8.7],[2.6,8.1],[4.1,5.4],[5.2,7.5],[2.6,9.0],[2.9,7.9],[3.1,6.8],[3.1,8.1],[3.0,7.2],[2.8,7.7],[3.9,10.0],[3.3,6.5],[5.1,6.6],[2.4,8.4],[2.3,8.7],[3.3,7.4],[3.2,8.0],[5.9,6.2],[1.0,7.4],[0.7,10.0],[0.7,4.1],[1.2,8.9],[4.1,5.0],[2.8,8.7],[2.0,6.0],[3.6,6.4],[4.6,7.3],[0.7,8.5],[2.8,8.1],[1.2,6.7],[5.0,5.2],[3.9,8.2],[3.7,8.0],[3.0,6.5],[4.4,7.0],[5.5,6.8],[0.5,9.1],[5.8,5.9],[3.0,8.3],[6.0,4.0],[4.7,5.9],[4.3,5.8],[3.1,7.1],[1.2,8.9],[0.5,8.4],[2.1,8.3],[1.5,4.6],[1.7,7.2],[3.7,7.1],[3.3,8.8],[1.6,7.5],[4.5,5.5],[2.8,10.0],[1.8,6.8],[3.0,9.3],[3.9,6.0],[4.9,6.8],[5.4,4.2],[3.7,6.6],[0.5,8.6],[2.8,6.2],[2.6,7.3],[2.0,10.0],[7.9,9.8],[5.2,7.7],[1.2,9.8],[2.3,7.9],[5.1,7.3],[4.7,4.0],[3.9,7.6],[3.2,6.7],[2.2,8.4],[4.2,6.3],[2.9,6.8],[4.7,7.0],[4.9,5.6]];
+
+// ──────────────────────────────────────────
+// TOOLTIP HELPER
+// ──────────────────────────────────────────
+const tooltip = document.getElementById('tooltip');
+function showTooltip(e, html) {
+  tooltip.innerHTML = html;
+  tooltip.style.display = 'block';
+  moveTooltip(e);
+}
+function moveTooltip(e) {
+  const x = e.clientX, y = e.clientY;
+  tooltip.style.left = (x + 14) + 'px';
+  tooltip.style.top  = (y - 36) + 'px';
+}
+function hideTooltip() { tooltip.style.display = 'none'; }
+
+// ──────────────────────────────────────────
+// CHART 1: Grouped bar - grade smartphone avg
+// ──────────────────────────────────────────
+(function(){
+  const canvas = document.getElementById('chart1');
+  if (!canvas) return;
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.offsetWidth || 780, H = 280;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const data = [
+    { label: '1학년', value: 3.2, color: '#93B8F8' },
+    { label: '2학년', value: 3.8, color: '#5B8BF5' },
+    { label: '3학년', value: 4.5, color: '#2451C7' },
+  ];
+
+  const PAD = { top: 30, right: 30, bottom: 50, left: 50 };
+  const cW = W - PAD.left - PAD.right;
+  const cH = H - PAD.top - PAD.bottom;
+  const maxVal = 6;
+  const barW = cW / data.length * 0.5;
+  const gap   = cW / data.length;
+
+  function draw(hoverIdx) {
+    ctx.clearRect(0, 0, W, H);
+    // grid lines
+    ctx.strokeStyle = '#E4E9F2'; ctx.lineWidth = 1;
+    for (let v = 0; v <= maxVal; v++) {
+      const y = PAD.top + cH - (v / maxVal) * cH;
+      ctx.beginPath(); ctx.moveTo(PAD.left, y); ctx.lineTo(PAD.left + cW, y); ctx.stroke();
+      ctx.fillStyle = '#9AA5B4'; ctx.font = '11px Noto Sans KR';
+      ctx.textAlign = 'right'; ctx.fillText(v, PAD.left - 6, y + 4);
+    }
+    data.forEach((d, i) => {
+      const x = PAD.left + gap * i + (gap - barW) / 2;
+      const bH = (d.value / maxVal) * cH;
+      const y = PAD.top + cH - bH;
+      // bar
+      ctx.fillStyle = hoverIdx === i ? '#FF6B35' : d.color;
+      ctx.beginPath();
+      ctx.roundRect(x, y, barW, bH, [6, 6, 0, 0]);
+      ctx.fill();
+      // label above bar
+      ctx.fillStyle = '#1A1F36'; ctx.font = 'bold 13px Noto Sans KR';
+      ctx.textAlign = 'center';
+      ctx.fillText(d.value + '시간', x + barW / 2, y - 8);
+      // x label
+      ctx.fillStyle = '#4A5568'; ctx.font = '12px Noto Sans KR';
+      ctx.fillText(d.label, x + barW / 2, H - 14);
+    });
+    // axes
+    ctx.strokeStyle = '#CBD5E0'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(PAD.left, PAD.top); ctx.lineTo(PAD.left, PAD.top + cH); ctx.lineTo(PAD.left + cW, PAD.top + cH); ctx.stroke();
+  }
+
+  draw(-1);
+
+  // hover state
+  let hoverIdx = -1;
+  const bars = data.map((d, i) => {
+    const x = PAD.left + gap * i + (gap - barW) / 2;
+    const bH = (d.value / maxVal) * cH;
+    const y = PAD.top + cH - bH;
+    return { x, y, w: barW, h: bH, label: d.label, value: d.value };
+  });
+
+  canvas.addEventListener('mousemove', e => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = (e.clientX - rect.left), my = (e.clientY - rect.top);
+    let found = -1;
+    bars.forEach((b, i) => {
+      if (mx >= b.x && mx <= b.x + b.w && my >= b.y && my <= b.y + b.h) found = i;
+    });
+    if (found !== hoverIdx) { hoverIdx = found; draw(hoverIdx); }
+    if (found >= 0) {
+      const b = bars[found];
+      showTooltip(e, `<b>${b.label}</b><br>평균 ${b.value}시간`);
+    } else { hideTooltip(); }
+    moveTooltip(e);
+  });
+  canvas.addEventListener('mouseleave', () => { hideTooltip(); hoverIdx = -1; draw(-1); });
+})();
+
+// ──────────────────────────────────────────
+// CHART 2: Histogram - gender × satisfaction
+// ──────────────────────────────────────────
+(function(){
+  const canvas = document.getElementById('chart2');
+  if (!canvas) return;
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.offsetWidth || 780, H = 300;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  // From CSV analysis
+  const maleData  = {1:1,2:7,3:3,4:13,5:15,6:18,7:11,8:8,9:13,10:5};
+  const femData   = {1:2,2:3,3:10,4:14,5:20,6:15,7:19,8:18,9:3,10:2};
+  const scores = [1,2,3,4,5,6,7,8,9,10];
+  const maxCount = 22;
+
+  const PAD = { top: 30, right: 20, bottom: 50, left: 50 };
+  const cW = W - PAD.left - PAD.right;
+  const cH = H - PAD.top - PAD.bottom;
+  const binW = cW / scores.length;
+  const barW = binW * 0.42;
+
+  function draw(hoverBin, hoverGender) {
+    ctx.clearRect(0, 0, W, H);
+    // grid
+    ctx.strokeStyle = '#E4E9F2'; ctx.lineWidth = 1;
+    for (let v = 0; v <= maxCount; v += 2) {
+      const y = PAD.top + cH - (v / maxCount) * cH;
+      ctx.beginPath(); ctx.moveTo(PAD.left, y); ctx.lineTo(PAD.left + cW, y); ctx.stroke();
+      if (v % 4 === 0) {
+        ctx.fillStyle = '#9AA5B4'; ctx.font = '11px Noto Sans KR';
+        ctx.textAlign = 'right'; ctx.fillText(v, PAD.left - 5, y + 4);
+      }
+    }
+    scores.forEach((s, i) => {
+      const x = PAD.left + binW * i;
+      const mv = maleData[s] || 0, fv = femData[s] || 0;
+      const mH = (mv / maxCount) * cH, fH = (fv / maxCount) * cH;
+      const mx = x + (binW - barW * 2 - 2) / 2;
+      const fx = mx + barW + 2;
+
+      // male bar
+      const isHovM = hoverBin === i && hoverGender === 'm';
+      ctx.fillStyle = isHovM ? '#1A6FE8' : '#93B8F8';
+      ctx.beginPath(); ctx.roundRect(mx, PAD.top + cH - mH, barW, mH, [4,4,0,0]); ctx.fill();
+      // female bar
+      const isHovF = hoverBin === i && hoverGender === 'f';
+      ctx.fillStyle = isHovF ? '#E8176B' : '#F9A8D4';
+      ctx.beginPath(); ctx.roundRect(fx, PAD.top + cH - fH, barW, fH, [4,4,0,0]); ctx.fill();
+
+      // x label
+      ctx.fillStyle = '#4A5568'; ctx.font = '12px Noto Sans KR';
+      ctx.textAlign = 'center';
+      ctx.fillText(s, x + binW / 2, H - 14);
+    });
+    // axes
+    ctx.strokeStyle = '#CBD5E0'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(PAD.left, PAD.top); ctx.lineTo(PAD.left, PAD.top + cH); ctx.lineTo(PAD.left + cW, PAD.top + cH); ctx.stroke();
+    // legend
+    ctx.fillStyle = '#93B8F8'; ctx.fillRect(PAD.left + 10, PAD.top + 6, 14, 10);
+    ctx.fillStyle = '#4A5568'; ctx.font = '12px Noto Sans KR'; ctx.textAlign = 'left';
+    ctx.fillText('남학생', PAD.left + 28, PAD.top + 16);
+    ctx.fillStyle = '#F9A8D4'; ctx.fillRect(PAD.left + 82, PAD.top + 6, 14, 10);
+    ctx.fillStyle = '#4A5568'; ctx.fillText('여학생', PAD.left + 100, PAD.top + 16);
+  }
+
+  draw(-1, null);
+
+  const barRegions = scores.map((s, i) => {
+    const x = PAD.left + binW * i;
+    const mv = maleData[s] || 0, fv = femData[s] || 0;
+    const mH = (mv / maxCount) * cH, fH = (fv / maxCount) * cH;
+    const mx = x + (binW - barW * 2 - 2) / 2;
+    const fx = mx + barW + 2;
+    return {
+      score: s,
+      m: { x: mx, y: PAD.top + cH - mH, w: barW, h: mH, count: mv },
+      f: { x: fx, y: PAD.top + cH - fH, w: barW, h: fH, count: fv },
+    };
+  });
+
+  canvas.addEventListener('mousemove', e => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+    let hBin = -1, hGender = null;
+    barRegions.forEach((br, i) => {
+      if (mx >= br.m.x && mx <= br.m.x + br.m.w && my >= br.m.y && my <= br.m.y + br.m.h) { hBin = i; hGender = 'm'; }
+      if (mx >= br.f.x && mx <= br.f.x + br.f.w && my >= br.f.y && my <= br.f.y + br.f.h) { hBin = i; hGender = 'f'; }
+    });
+    draw(hBin, hGender);
+    if (hBin >= 0) {
+      const br = barRegions[hBin];
+      const label = hGender === 'm' ? '남학생' : '여학생';
+      const count = hGender === 'm' ? br.m.count : br.f.count;
+      showTooltip(e, `만족도 ${br.score}점<br><b>${label}: ${count}명</b>`);
+    } else { hideTooltip(); }
+    moveTooltip(e);
+  });
+  canvas.addEventListener('mouseleave', () => { hideTooltip(); draw(-1, null); });
+})();
+
+// ──────────────────────────────────────────
+// CHART 3: Scatter plot
+// ──────────────────────────────────────────
+(function(){
+  const canvas = document.getElementById('chart3');
+  if (!canvas) return;
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.offsetWidth || 780, H = 320;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const PAD = { top: 20, right: 20, bottom: 50, left: 55 };
+  const cW = W - PAD.left - PAD.right;
+  const cH = H - PAD.top - PAD.bottom;
+  const xMin = 0, xMax = 10, yMin = 3, yMax = 11;
+
+  function toCanvas(px, py) {
+    return [
+      PAD.left + ((px - xMin) / (xMax - xMin)) * cW,
+      PAD.top  + ((yMax - py) / (yMax - yMin)) * cH
+    ];
+  }
+
+  let hoverIdx = -1;
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    // grid
+    ctx.strokeStyle = '#E4E9F2'; ctx.lineWidth = 1;
+    for (let v = 4; v <= 10; v += 1) {
+      const [,y] = toCanvas(0, v);
+      ctx.beginPath(); ctx.moveTo(PAD.left, y); ctx.lineTo(PAD.left + cW, y); ctx.stroke();
+      ctx.fillStyle = '#9AA5B4'; ctx.font = '11px Noto Sans KR'; ctx.textAlign = 'right';
+      ctx.fillText(v, PAD.left - 6, y + 4);
+    }
+    for (let v = 0; v <= 9; v += 1) {
+      const [x] = toCanvas(v, 0);
+      ctx.strokeStyle = '#E4E9F2'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(x, PAD.top); ctx.lineTo(x, PAD.top + cH); ctx.stroke();
+      ctx.fillStyle = '#9AA5B4'; ctx.font = '11px Noto Sans KR'; ctx.textAlign = 'center';
+      ctx.fillText(v, x, H - 14);
+    }
+    // trend line
+    const n = SCATTER.length;
+    const meanX = SCATTER.reduce((s,p)=>s+p[0],0)/n;
+    const meanY = SCATTER.reduce((s,p)=>s+p[1],0)/n;
+    const b = SCATTER.reduce((s,p)=>s+(p[0]-meanX)*(p[1]-meanY),0) / SCATTER.reduce((s,p)=>s+(p[0]-meanX)**2,0);
+    const a = meanY - b * meanX;
+    const [tx1,ty1] = toCanvas(0, a);
+    const [tx2,ty2] = toCanvas(9, a + b * 9);
+    ctx.strokeStyle = 'rgba(255,107,53,0.4)'; ctx.lineWidth = 2; ctx.setLineDash([6,4]);
+    ctx.beginPath(); ctx.moveTo(tx1, ty1); ctx.lineTo(tx2, ty2); ctx.stroke();
+    ctx.setLineDash([]);
+    // dots
+    SCATTER.forEach(([px, py], i) => {
+      const [cx, cy] = toCanvas(px, py);
+      const isHover = i === hoverIdx;
+      ctx.beginPath(); ctx.arc(cx, cy, isHover ? 7 : 4, 0, Math.PI * 2);
+      ctx.fillStyle = isHover ? '#FF6B35' : 'rgba(59,111,232,0.55)';
+      ctx.fill();
+      if (isHover) { ctx.strokeStyle = '#FF6B35'; ctx.lineWidth = 1.5; ctx.stroke(); }
+    });
+    // axes
+    ctx.strokeStyle = '#CBD5E0'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(PAD.left, PAD.top); ctx.lineTo(PAD.left, PAD.top + cH); ctx.lineTo(PAD.left + cW, PAD.top + cH); ctx.stroke();
+    // axis labels
+    ctx.fillStyle = '#4A5568'; ctx.font = '12px Noto Sans KR'; ctx.textAlign = 'center';
+    ctx.fillText('스마트폰 사용 시간 (시간/일)', PAD.left + cW / 2, H - 2);
+    ctx.save(); ctx.translate(14, PAD.top + cH / 2); ctx.rotate(-Math.PI / 2);
+    ctx.fillText('수면 시간 (시간)', 0, 0); ctx.restore();
+  }
+
+  draw();
+
+  // precompute canvas coords for hit testing
+  const pts = SCATTER.map(([px, py]) => toCanvas(px, py));
+
+  canvas.addEventListener('mousemove', e => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+    let found = -1, minDist = 12;
+    pts.forEach(([cx, cy], i) => {
+      const d = Math.hypot(cx - mx, cy - my);
+      if (d < minDist) { minDist = d; found = i; }
+    });
+    if (found !== hoverIdx) { hoverIdx = found; draw(); }
+    if (found >= 0) {
+      const [px, py] = SCATTER[found];
+      showTooltip(e, `스마트폰: ${px}시간<br>수면: ${py}시간`);
+    } else { hideTooltip(); }
+    moveTooltip(e);
+  });
+  canvas.addEventListener('mouseleave', () => { hideTooltip(); hoverIdx = -1; draw(); });
+})();
+
+// ──────────────────────────────────────────
+// CHART 4: Grouped bar - grade × (smart/study/exercise)
+// ──────────────────────────────────────────
+(function(){
+  const canvas = document.getElementById('chart4');
+  if (!canvas) return;
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.offsetWidth || 780, H = 300;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const grades  = ['1학년','2학년','3학년'];
+  const series  = [
+    { label: '스마트폰', color: '#E74C3C', hColor: '#C0392B', vals: [3.2, 3.8, 4.5] },
+    { label: '공부',     color: '#3B6FE8', hColor: '#2451C7', vals: [2.8, 3.2, 3.9] },
+    { label: '운동(주간 일수)', color: '#2ECC71', hColor: '#1A9E55', vals: [3.5, 3.0, 2.3] },
+  ];
+  const maxVal = 5;
+  const PAD = { top: 30, right: 20, bottom: 60, left: 50 };
+  const cW = W - PAD.left - PAD.right;
+  const cH = H - PAD.top - PAD.bottom;
+  const groupW = cW / grades.length;
+  const nSeries = series.length;
+  const barW = groupW * 0.22;
+  const barGap = 4;
+
+  function getBarX(gi, si) {
+    const groupStart = PAD.left + gi * groupW;
+    const totalW = nSeries * barW + (nSeries - 1) * barGap;
+    const offset = (groupW - totalW) / 2;
+    return groupStart + offset + si * (barW + barGap);
+  }
+
+  function draw(hoverGi, hoverSi) {
+    ctx.clearRect(0, 0, W, H);
+    // grid
+    ctx.strokeStyle = '#E4E9F2'; ctx.lineWidth = 1;
+    for (let v = 0; v <= maxVal; v++) {
+      const y = PAD.top + cH - (v / maxVal) * cH;
+      ctx.beginPath(); ctx.moveTo(PAD.left, y); ctx.lineTo(PAD.left + cW, y); ctx.stroke();
+      ctx.fillStyle = '#9AA5B4'; ctx.font = '11px Noto Sans KR'; ctx.textAlign = 'right';
+      ctx.fillText(v, PAD.left - 5, y + 4);
+    }
+    grades.forEach((g, gi) => {
+      series.forEach((s, si) => {
+        const bx = getBarX(gi, si);
+        const bH = (s.vals[gi] / maxVal) * cH;
+        const by = PAD.top + cH - bH;
+        const isHov = hoverGi === gi && hoverSi === si;
+        ctx.fillStyle = isHov ? s.hColor : s.color;
+        ctx.beginPath(); ctx.roundRect(bx, by, barW, bH, [4,4,0,0]); ctx.fill();
+        // value label on hover
+        if (isHov) {
+          ctx.fillStyle = '#1A1F36'; ctx.font = 'bold 12px Noto Sans KR'; ctx.textAlign = 'center';
+          ctx.fillText(s.vals[gi], bx + barW / 2, by - 6);
+        }
+      });
+      // grade label
+      ctx.fillStyle = '#4A5568'; ctx.font = '12px Noto Sans KR'; ctx.textAlign = 'center';
+      ctx.fillText(g, PAD.left + gi * groupW + groupW / 2, H - 34);
+    });
+    // axes
+    ctx.strokeStyle = '#CBD5E0'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(PAD.left, PAD.top); ctx.lineTo(PAD.left, PAD.top + cH); ctx.lineTo(PAD.left + cW, PAD.top + cH); ctx.stroke();
+    // legend
+    series.forEach((s, i) => {
+      const lx = PAD.left + i * 140;
+      const ly = H - 14;
+      ctx.fillStyle = s.color; ctx.fillRect(lx, ly - 10, 12, 10);
+      ctx.fillStyle = '#4A5568'; ctx.font = '12px Noto Sans KR'; ctx.textAlign = 'left';
+      ctx.fillText(s.label, lx + 16, ly);
+    });
+  }
+
+  draw(-1, -1);
+
+  canvas.addEventListener('mousemove', e => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+    let hGi = -1, hSi = -1;
+    grades.forEach((g, gi) => {
+      series.forEach((s, si) => {
+        const bx = getBarX(gi, si);
+        const bH = (s.vals[gi] / maxVal) * cH;
+        const by = PAD.top + cH - bH;
+        if (mx >= bx && mx <= bx + barW && my >= by && my <= by + bH) { hGi = gi; hSi = si; }
+      });
+    });
+    draw(hGi, hSi);
+    if (hGi >= 0) {
+      const unit = hSi === 2 ? '일/주' : '시간/일';
+      showTooltip(e, `${grades[hGi]} ${series[hSi].label}<br><b>${series[hSi].vals[hGi]}${unit}</b>`);
+    } else { hideTooltip(); }
+    moveTooltip(e);
+  });
+  canvas.addEventListener('mouseleave', () => { hideTooltip(); draw(-1, -1); });
+})();
+
+// ──────────────────────────────────────────
+// QUIZ LOGIC
+// ──────────────────────────────────────────
+function answer(btn, result, feedbackId) {
+  const block = btn.closest('.quiz-block');
+  if (block.dataset.answered) return;
+  block.dataset.answered = '1';
+  const allBtns = block.querySelectorAll('.quiz-btn');
+  allBtns.forEach(b => {
+    b.disabled = true;
+    if (b === btn) b.classList.add(result);
+    else if (result === 'wrong' && b.onclick && b.onclick.toString().includes("'correct'")) {
+      b.classList.add('reveal-correct');
+    }
+  });
+  const fb = document.getElementById(feedbackId);
+  fb.style.display = 'block';
+  fb.className = 'quiz-feedback ' + result;
+}
+
+// ──────────────────────────────────────────
+// PRACTICE TOGGLE
+// ──────────────────────────────────────────
+function togglePractice(header) {
+  const body = header.nextElementSibling;
+  const toggle = header.querySelector('.practice-toggle');
+  const isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : 'block';
+  toggle.textContent = isOpen ? '▼ 펼치기' : '▲ 접기';
+}
+</script>
+</body>
+</html>
