@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4-4 거짓말하는 차트 | 인공지능 기초 with 데이터 분석</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --primary:#3B6FE8;--primary-light:#EEF3FF;
+  --accent:#FF6B35;--accent-light:#FFF0EB;
+  --green:#2ECC71;--green-light:#E8F8F0;
+  --red:#E74C3C;--red-light:#FDECEA;
+  --yellow:#F1C40F;--yellow-light:#FEFCE8;
+  --teal:#0EA5A0;--teal-light:#EDFAFA;
+  --purple:#8B5CF6;--purple-light:#F3F0FF;
+  --text-primary:#1A1F36;--text-secondary:#4A5568;--text-muted:#9AA5B4;
+  --bg:#F7F8FC;--card-bg:#FFFFFF;--border:#E4E9F2;
+  --radius:12px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text-primary);min-height:100vh;font-size:15px;line-height:1.7;}
+.topbar{position:sticky;top:0;z-index:200;background:#fff;border-bottom:1px solid var(--border);padding:0 32px;height:52px;display:flex;align-items:center;justify-content:space-between;}
+.topbar-home{display:flex;align-items:center;gap:10px;text-decoration:none;}
+.topbar-logo-icon{width:30px;height:30px;background:linear-gradient(135deg,var(--primary),#6B9DFF);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;}
+.topbar-logo-text{font-size:13px;font-weight:700;color:var(--text-primary);}
+.topbar-back-btn{background:var(--primary-light);color:var(--primary);border:1px solid #C5D5FF;border-radius:8px;padding:6px 14px;font-size:13px;font-weight:600;text-decoration:none;transition:all .15s;}
+.topbar-back-btn:hover{background:var(--primary);color:white;}
+.main{width:100%;}
+.content{max-width:860px;margin:0 auto;padding:40px 40px 80px;}
+.breadcrumb{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);margin-bottom:24px;}
+.breadcrumb span{color:var(--accent);font-weight:500;}
+.lesson-header{background:linear-gradient(135deg,#4C1D95,#7C3AED);border-radius:16px;padding:32px 36px;color:white;margin-bottom:32px;position:relative;overflow:hidden;}
+.lesson-header::before{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,0.06);}
+.lesson-meta{display:flex;align-items:center;gap:10px;font-size:12px;opacity:.85;margin-bottom:10px;}
+.lesson-meta-badge{background:rgba(255,255,255,0.2);border-radius:20px;padding:3px 10px;font-weight:500;}
+.lesson-title{font-size:28px;font-weight:700;margin-bottom:6px;}
+.lesson-subtitle{font-size:15px;opacity:.85;}
+.intro-text{background:var(--card-bg);border-radius:var(--radius);padding:22px 28px;border:1px solid var(--border);color:var(--text-secondary);font-size:15px;line-height:1.85;margin-bottom:22px;}
+.warn-box{background:#FFF8F0;border:1.5px solid #F9C87A;border-radius:var(--radius);padding:14px 20px;margin-bottom:28px;display:flex;gap:10px;font-size:13.5px;color:#7A4A00;line-height:1.7;}
+.warn-label{background:#F97316;color:white;font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;flex-shrink:0;margin-top:3px;}
+.section-title{font-size:18px;font-weight:700;color:var(--text-primary);margin:32px 0 16px;display:flex;align-items:center;gap:10px;padding-bottom:12px;border-bottom:2px solid #DDD6FE;}
+.section-title-icon{width:32px;height:32px;background:#EDE9FE;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+
+/* TYPE CARDS 2x2 */
+.type-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:32px;}
+.type-card{background:var(--card-bg);border:1.5px solid var(--border);border-radius:var(--radius);padding:18px 20px;cursor:pointer;transition:all .18s;}
+.type-card:hover{border-color:var(--purple);background:var(--purple-light);}
+.type-card.active{border-color:var(--primary);background:var(--primary-light);box-shadow:0 0 0 3px rgba(59,111,232,0.15);}
+.type-num{font-size:11px;font-weight:700;color:var(--primary);margin-bottom:6px;}
+.type-title{font-size:14.5px;font-weight:700;color:var(--text-primary);margin-bottom:6px;}
+.type-desc{font-size:13px;color:var(--text-secondary);line-height:1.6;}
+
+/* CASE ANALYSIS PANEL */
+.case-panel{border:1.5px solid #C5D5FF;border-radius:var(--radius);overflow:hidden;margin-bottom:28px;background:var(--card-bg);}
+.case-panel-header{background:#EEF3FF;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;}
+.case-panel-header-left{display:flex;align-items:center;gap:10px;}
+.case-badge{background:var(--primary);color:white;font-size:10px;font-weight:700;padding:2px 10px;border-radius:12px;}
+.case-panel-title{font-size:15px;font-weight:700;color:var(--primary);}
+.case-toggle{font-size:12px;color:var(--primary);opacity:.75;}
+.case-panel-body{padding:24px 28px;}
+.case-desc{font-size:13.5px;color:var(--text-secondary);margin-bottom:18px;line-height:1.7;}
+
+/* DUAL CHART */
+.dual-chart{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px;}
+.chart-col-label{font-size:13px;font-weight:700;text-align:center;margin-bottom:8px;}
+.chart-col-label.bad{color:var(--red);}
+.chart-col-label.good{color:var(--green);}
+.chart-box{background:#FAFAFA;border:1px solid var(--border);border-radius:10px;padding:14px 12px;position:relative;}
+.chart-box canvas{display:block;margin:0 auto;}
+.chart-tooltip{position:fixed;pointer-events:none;background:rgba(26,31,54,0.93);color:white;font-size:12px;font-family:'Noto Sans KR',sans-serif;padding:7px 12px;border-radius:8px;line-height:1.65;white-space:nowrap;display:none;z-index:9999;box-shadow:0 4px 14px rgba(0,0,0,0.25);}
+
+/* PROBLEM BOX */
+.problem-box{background:#FFF8F0;border:1px solid #F9C87A;border-radius:var(--radius);padding:14px 18px;margin-bottom:12px;}
+.problem-label{font-size:12px;font-weight:700;color:#B45309;margin-bottom:6px;display:flex;align-items:center;gap:5px;}
+.problem-text{font-size:13.5px;color:#7A4A00;line-height:1.7;}
+.find-box{background:var(--primary-light);border:1px solid #C5D5FF;border-radius:var(--radius);padding:14px 18px;margin-bottom:16px;}
+.find-label{font-size:12px;font-weight:700;color:var(--primary);margin-bottom:6px;display:flex;align-items:center;gap:5px;}
+.find-text{font-size:13.5px;color:var(--text-secondary);line-height:1.7;}
+
+/* QUIZ */
+.quiz-q-label{font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:10px;}
+.quiz-opts{display:flex;flex-direction:column;gap:7px;margin-bottom:8px;}
+.qopt{padding:10px 16px;border-radius:8px;border:1.5px solid var(--border);background:white;font-size:13px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;color:var(--text-secondary);transition:all .15s;text-align:left;}
+.qopt:hover:not(:disabled){border-color:var(--purple);color:var(--purple);background:var(--purple-light);}
+.qopt.qcorrect{background:var(--green-light);border-color:var(--green);color:#1A7A44;font-weight:700;}
+.qopt.qwrong{background:var(--red-light);border-color:var(--red);color:var(--red);}
+.qopt.qreveal{background:var(--green-light);border-color:var(--green);color:#1A7A44;}
+.qopt:disabled{cursor:default;}
+.quiz-fb{display:none;padding:12px 16px;border-radius:8px;font-size:13.5px;line-height:1.65;animation:fadeIn .25s ease;margin-top:6px;background:var(--green-light);border:1px solid var(--green);color:#1A5A30;}
+
+/* CASE NAV */
+.case-nav{display:flex;align-items:center;justify-content:space-between;margin-top:20px;padding-top:16px;border-top:1px solid var(--border);}
+.cnav-btn{padding:8px 20px;border-radius:8px;color:white;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all .15s;}
+.cnav-btn:disabled{opacity:.35;cursor:not-allowed;}
+.cnav-btn.prev{background:var(--text-secondary);}
+.cnav-btn.next{background:var(--accent);}
+.cnav-btn.next:hover:not(:disabled){background:#E85A20;}
+.cnav-progress{font-size:13px;color:var(--text-muted);}
+
+/* COMPREHENSIVE QUIZ */
+.comp-practice{border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:28px;}
+.comp-header{background:var(--text-primary);color:white;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;}
+.comp-title{font-size:15px;font-weight:600;}
+.comp-toggle{font-size:12px;opacity:.75;}
+.comp-body{background:var(--card-bg);padding:24px 28px;}
+.comp-q{margin-bottom:22px;}
+.comp-situation{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 16px;font-size:13.5px;color:var(--text-secondary);margin-bottom:10px;line-height:1.65;}
+
+/* CHECKLIST */
+.checklist{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px;}
+.cl-item{background:var(--card-bg);border:1.5px solid var(--border);border-radius:var(--radius);padding:14px 16px;display:flex;gap:12px;align-items:flex-start;}
+.cl-icon{font-size:20px;flex-shrink:0;}
+.cl-content{}
+.cl-title{font-size:13px;font-weight:700;color:var(--text-primary);margin-bottom:3px;}
+.cl-desc{font-size:12px;color:var(--text-muted);line-height:1.5;}
+
+/* TIP */
+.tip-box{background:var(--yellow-light);border:1.5px solid #F9E04B;border-radius:var(--radius);padding:14px 20px;margin:16px 0;display:flex;gap:10px;font-size:13.5px;color:#6B5000;}
+.tip-label{background:var(--yellow);color:#5A4000;font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;flex-shrink:0;margin-top:3px;}
+
+/* SUMMARY */
+.summary-box{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:26px 30px;margin-bottom:24px;}
+.summary-title{font-size:15px;font-weight:700;color:var(--text-primary);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.summary-title::before{content:'';width:4px;height:18px;background:var(--purple);border-radius:2px;}
+.summary-list{list-style:none;}
+.summary-list li{font-size:14px;color:var(--text-secondary);padding:8px 0;display:flex;align-items:flex-start;gap:10px;border-bottom:1px dashed var(--border);}
+.summary-list li:last-child{border-bottom:none;}
+.summary-list li::before{content:'✓';color:var(--green);font-weight:700;flex-shrink:0;margin-top:1px;}
+
+.nav-buttons{display:flex;justify-content:space-between;align-items:center;margin-top:40px;padding-top:24px;border-top:1px solid var(--border);}
+.btn{padding:12px 24px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all .15s;display:flex;align-items:center;gap:8px;border:none;}
+.btn-secondary{background:var(--bg);color:var(--text-secondary);border:1px solid var(--border);}
+.btn-secondary:hover{background:var(--border);}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:translateY(0);}}
+</style>
+</head>
+<body>
+<div class="chart-tooltip" id="chart-tooltip"></div>
+
+<header class="topbar">
+  <a class="topbar-home" href="index.html">
+    <div class="topbar-logo-icon">📊</div>
+    <div class="topbar-logo-text">인공지능 기초 with 데이터 분석</div>
+  </a>
+  <a class="topbar-back-btn" href="index.html">⌂ 메인으로</a>
+</header>
+
+<main class="main">
+<div class="content">
+
+  <div class="breadcrumb">홈 › 시각화로 이야기하기 › <span>4-4 거짓말하는 차트</span></div>
+
+  <div class="lesson-header">
+    <div class="lesson-meta">
+      <span class="lesson-meta-badge">📊 4단원 · 4-4</span>
+      <span>⏱ 20분</span>
+    </div>
+    <div class="lesson-title">거짓말하는 차트</div>
+    <div class="lesson-subtitle">오해 유발 시각화 판별</div>
+  </div>
+
+  <div class="intro-text">
+    차트는 데이터를 효과적으로 전달하는 도구이지만, <strong>의도적으로 사람을 속이는 도구로도 사용될 수 있습니다.</strong> 잘못 만들어진 차트를 무비판적으로 받아들이면, 완전히 틀린 결론에 도달할 수 있습니다.<br><br>
+    이번 레슨에서는 현실에서 자주 등장하는 <strong>4가지 차트 속임수</strong>를 배우고, 이를 식별하는 눈을 기릅니다.
+  </div>
+  <div class="warn-box">
+    <span class="warn-label">주의</span>
+    <div>뉴스, 광고, SNS에서 보는 차트 중 상당수가 의도적이든 무의식적이든 <strong>왜곡을 포함하고 있습니다.</strong> 비판적 시각이 필수입니다!</div>
+  </div>
+
+  <!-- 4가지 유형 카드 -->
+  <div class="section-title"><div class="section-title-icon">🎭</div>차트 속임수 4가지 유형</div>
+  <p style="font-size:13.5px;color:var(--text-secondary);margin-bottom:14px;">각 유형을 클릭하면 아래 사례 분석이 전환됩니다.</p>
+  <div class="type-grid">
+    <div class="type-card active" id="tc-0" onclick="switchCase(0)">
+      <div class="type-num">1.</div>
+      <div class="type-title">잘린 Y축 (Truncated Y-Axis)</div>
+      <div class="type-desc">Y축을 0에서 시작하지 않고, 데이터 범위에 맞춰 잘라냅니다. 작은 차이가 매우 큰 것처럼 보이게 됩니다.</div>
+    </div>
+    <div class="type-card" id="tc-1" onclick="switchCase(1)">
+      <div class="type-num">2.</div>
+      <div class="type-title">체리 피킹 (Cherry-Picking)</div>
+      <div class="type-desc">자신에게 유리한 기간의 데이터만 선택적으로 보여줍니다. 전체 추세와 반대되는 결론을 이끌어낼 수 있습니다.</div>
+    </div>
+    <div class="type-card" id="tc-2" onclick="switchCase(2)">
+      <div class="type-num">3.</div>
+      <div class="type-title">시각적 왜곡 (Visual Distortion)</div>
+      <div class="type-desc">특정 항목을 끌어내거나(pull out), 색상 대비를 강조하거나, 3D 효과를 사용하여 실제보다 크게/작게 보이게 합니다.</div>
+    </div>
+    <div class="type-card" id="tc-3" onclick="switchCase(3)">
+      <div class="type-num">4.</div>
+      <div class="type-title">거짓 인과관계 (Spurious Correlation)</div>
+      <div class="type-desc">두 변수를 같은 차트에 겹쳐 놓으면, 마치 인과관계가 있는 것처럼 보입니다. 하지만 상관관계는 인과관계가 아닙니다!</div>
+    </div>
+  </div>
+
+  <!-- 사례 분석 패널 -->
+  <div class="case-panel" id="case-panel">
+    <div class="case-panel-header" onclick="toggleCase(this)">
+      <div class="case-panel-header-left">
+        <span class="case-badge">사례 분석</span>
+        <span class="case-panel-title" id="case-panel-title">잘린 Y축 (Truncated Y-Axis)</span>
+      </div>
+      <span class="case-toggle">▲ 접기</span>
+    </div>
+    <div class="case-panel-body" id="case-panel-body">
+      <!-- dynamically rendered -->
+    </div>
+  </div>
+
+  <!-- 종합 퀴즈 -->
+  <div class="section-title"><div class="section-title-icon">🔎</div>종합: 속임수를 찾아라!</div>
+  <p style="font-size:14px;color:var(--text-secondary);margin-bottom:14px;">아래 상황들을 보고, 어떤 속임수가 사용되었는지 맞춰보세요.</p>
+  <div class="comp-practice">
+    <div class="comp-header" onclick="toggleComp(this)">
+      <span class="comp-title">종합 퀴즈: 이 차트의 문제는?</span>
+      <span class="comp-toggle">▲ 접기</span>
+    </div>
+    <div class="comp-body">
+
+      <div class="comp-q">
+        <div style="font-size:13px;font-weight:700;color:var(--text-muted);margin-bottom:6px;">문제 1</div>
+        <div class="comp-situation">"한 뉴스에서 '올해 범죄율 급증!'이라며 보여준 차트의 Y축이 4.2%~4.9% 범위로 잘려 있었다."</div>
+        <div class="quiz-q-label">이 차트에서 사용된 속임수는?</div>
+        <div class="quiz-opts">
+          <button class="qopt" onclick="compAns(this,true,'cfb1')">잘린 Y축</button>
+          <button class="qopt" onclick="compAns(this,false,'cfb1')">체리 피킹</button>
+          <button class="qopt" onclick="compAns(this,false,'cfb1')">시각적 왜곡</button>
+          <button class="qopt" onclick="compAns(this,false,'cfb1')">거짓 인과관계</button>
+        </div>
+        <div class="quiz-fb" id="cfb1">✅ 4.2%에서 4.9%로의 변화(0.7%p)를 Y축을 잘라 마치 큰 변화인 것처럼 과장한 것입니다.</div>
+      </div>
+
+      <div class="comp-q">
+        <div style="font-size:13px;font-weight:700;color:var(--text-muted);margin-bottom:6px;">문제 2</div>
+        <div class="comp-situation">"한 다이어트 광고에서 '2주간 체중 감량 효과!'라며 2주 데이터만 보여줬다. 하지만 전체 3개월 데이터에서는 2주 후 다시 원래 체중으로 돌아갔다."</div>
+        <div class="quiz-q-label">이 차트에서 사용된 속임수는?</div>
+        <div class="quiz-opts">
+          <button class="qopt" onclick="compAns(this,false,'cfb2')">잘린 Y축</button>
+          <button class="qopt" onclick="compAns(this,true,'cfb2')">체리 피킹</button>
+          <button class="qopt" onclick="compAns(this,false,'cfb2')">시각적 왜곡</button>
+          <button class="qopt" onclick="compAns(this,false,'cfb2')">거짓 인과관계</button>
+        </div>
+        <div class="quiz-fb" id="cfb2">✅ 효과가 있어 보이는 2주 구간만 선택적으로 보여준 체리 피킹입니다.</div>
+      </div>
+
+      <div class="comp-q">
+        <div style="font-size:13px;font-weight:700;color:var(--text-muted);margin-bottom:6px;">문제 3</div>
+        <div class="comp-situation">"'한국의 초콜릿 소비량이 많을수록 노벨상 수상자가 많다'는 차트를 봤다."</div>
+        <div class="quiz-q-label">이 차트에서 사용된 속임수는?</div>
+        <div class="quiz-opts">
+          <button class="qopt" onclick="compAns(this,false,'cfb3')">잘린 Y축</button>
+          <button class="qopt" onclick="compAns(this,false,'cfb3')">체리 피킹</button>
+          <button class="qopt" onclick="compAns(this,false,'cfb3')">시각적 왜곡</button>
+          <button class="qopt" onclick="compAns(this,true,'cfb3')">거짓 인과관계</button>
+        </div>
+        <div class="quiz-fb" id="cfb3">✅ 초콜릿 소비와 노벨상은 인과관계가 아닙니다. 둘 다 "경제 수준"이라는 제3의 변수와 관련이 있을 뿐입니다.</div>
+      </div>
+
+      <div class="comp-q" style="margin-bottom:0;">
+        <div style="font-size:13px;font-weight:700;color:var(--text-muted);margin-bottom:6px;">문제 4</div>
+        <div class="comp-situation">"회사 발표에서 자사 제품의 원형 차트 조각이 유독 크고 화려한 색이었는데, 실제 수치를 보니 2위였다."</div>
+        <div class="quiz-q-label">이 차트에서 사용된 속임수는?</div>
+        <div class="quiz-opts">
+          <button class="qopt" onclick="compAns(this,false,'cfb4')">잘린 Y축</button>
+          <button class="qopt" onclick="compAns(this,false,'cfb4')">체리 피킹</button>
+          <button class="qopt" onclick="compAns(this,true,'cfb4')">시각적 왜곡</button>
+          <button class="qopt" onclick="compAns(this,false,'cfb4')">거짓 인과관계</button>
+        </div>
+        <div class="quiz-fb" id="cfb4">✅ 색상과 크기 강조로 실제 수치와 다른 인상을 주는 시각적 왜곡입니다.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 체크리스트 -->
+  <div class="section-title"><div class="section-title-icon">✅</div>차트를 볼 때 확인해야 할 체크리스트</div>
+  <div class="checklist">
+    <div class="cl-item"><div class="cl-icon">🔍</div><div class="cl-content"><div class="cl-title">Y축이 0에서 시작하는가?</div><div class="cl-desc">잘린 Y축은 차이를 과장합니다</div></div></div>
+    <div class="cl-item"><div class="cl-icon">🔍</div><div class="cl-content"><div class="cl-title">전체 기간의 데이터가 표시되어 있는가?</div><div class="cl-desc">일부 기간만 보여주면 추세가 왜곡됩니다</div></div></div>
+    <div class="cl-item"><div class="cl-icon">🔍</div><div class="cl-content"><div class="cl-title">3D 효과나 특수한 시각 강조가 있는가?</div><div class="cl-desc">시각적 효과가 크기 인식을 왜곡합니다</div></div></div>
+    <div class="cl-item"><div class="cl-icon">⚠️</div><div class="cl-content"><div class="cl-title">"상관관계"를 "인과관계"로 해석하고 있지 않은가?</div><div class="cl-desc">함께 변한다고 원인-결과는 아닙니다</div></div></div>
+    <div class="cl-item"><div class="cl-icon">⚠️</div><div class="cl-content"><div class="cl-title">축의 눈금 간격이 일정한가?</div><div class="cl-desc">불균등한 간격은 변화율을 왜곡합니다</div></div></div>
+    <div class="cl-item"><div class="cl-icon">📋</div><div class="cl-content"><div class="cl-title">출처와 조사 방법이 명시되어 있는가?</div><div class="cl-desc">출처 없는 데이터는 신뢰하기 어렵습니다</div></div></div>
+  </div>
+
+  <div class="tip-box">
+    <span class="tip-label">TIP</span>
+    <div><strong>핵심 원칙:</strong> 차트를 볼 때 <strong>"이 차트가 나에게 무엇을 설득하려 하는가?"</strong>를 항상 자문하세요. 차트의 메시지를 그대로 받아들이지 말고, 데이터 자체를 먼저 확인하는 습관을 기르세요.</div>
+  </div>
+
+  <div class="summary-box">
+    <div class="summary-title">이번 레슨에서 배운 것</div>
+    <ul class="summary-list">
+      <li><strong>잘린 Y축:</strong> 작은 차이를 과장하는 기법</li>
+      <li><strong>체리 피킹:</strong> 유리한 데이터만 선택적으로 보여주는 기법</li>
+      <li><strong>시각적 왜곡:</strong> 3D, 색상, 크기 조작으로 인식을 왜곡하는 기법</li>
+      <li><strong>거짓 인과관계:</strong> 상관관계를 인과관계처럼 보이게 하는 기법</li>
+      <li>차트를 비판적으로 읽기 위한 <strong>6가지 체크리스트</strong></li>
+    </ul>
+  </div>
+
+  <div class="nav-buttons">
+    <button class="btn btn-secondary" onclick="location.href='my-chart-4-3.html'">← 이전 레슨</button>
+    <span style="font-size:13px;color:var(--text-muted);">4단원 완료! 🎉</span>
+  </div>
+
+</div>
+</main>
+
+<script>
+
+/* ============================================================
+   CHART DRAWING UTILITIES
+============================================================ */
+function setupCanvas(id, w, h) {
+  const dpr = devicePixelRatio || 1;
+  const c = document.getElementById(id);
+  if (!c) return null;
+  c.width = w * dpr; c.height = h * dpr;
+  c.style.width = w + 'px'; c.style.height = h + 'px';
+  const ctx = c.getContext('2d'); ctx.scale(dpr, dpr);
+  return ctx;
+}
+
+const PAD = {top:54, right:16, bottom:42, left:50};
+
+/* ── TOOLTIP ── */
+const TT = document.getElementById('chart-tooltip');
+function showTT(e, html){ TT.innerHTML=html; TT.style.display='block'; moveTT(e); }
+function moveTT(e){ const x=e.clientX+14,y=e.clientY-40; const W2=TT.offsetWidth,vw=window.innerWidth; TT.style.left=(x+W2>vw-8?x-W2-20:x)+'px'; TT.style.top=Math.max(4,y)+'px'; }
+function hideTT(){ TT.style.display='none'; }
+
+function attachHover(canvas, hits, type){
+  canvas.addEventListener('mousemove', e=>{
+    const r=canvas.getBoundingClientRect(), mx=e.clientX-r.left, my=e.clientY-r.top;
+    let found=false;
+    for(const d of hits){
+      if(type==='point'){ const dx=mx-d.cx,dy=my-d.cy; if(Math.sqrt(dx*dx+dy*dy)<(d.r||10)){showTT(e,d.html);found=true;break;} }
+      else if(type==='bar'){ if(mx>=d.x&&mx<=d.x+d.w&&my>=d.y&&my<=d.y+d.h){showTT(e,d.html);found=true;break;} }
+    }
+    if(!found) hideTT(); else moveTT(e);
+  });
+  canvas.addEventListener('mouseleave', hideTT);
+}
+
+function gridAndAxes(ctx, W, H, minV, maxV, step, toY, labels, gap) {
+  const cW=W-PAD.left-PAD.right, cH=H-PAD.top-PAD.bottom;
+  ctx.strokeStyle='#E4E9F2'; ctx.lineWidth=1;
+  for(let v=Math.ceil(minV/step)*step; v<=maxV+0.001; v+=step){
+    const y=toY(v);
+    ctx.beginPath(); ctx.moveTo(PAD.left,y); ctx.lineTo(PAD.left+cW,y); ctx.stroke();
+    ctx.fillStyle='#9AA5B4'; ctx.font='11px Noto Sans KR'; ctx.textAlign='right';
+    ctx.fillText(v%1===0?v:v.toFixed(1), PAD.left-5, y+4);
+  }
+  ctx.strokeStyle='#CBD5E0'; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.moveTo(PAD.left,PAD.top); ctx.lineTo(PAD.left,PAD.top+cH); ctx.lineTo(PAD.left+cW,PAD.top+cH); ctx.stroke();
+  if(labels&&gap){ labels.forEach((l,i)=>{ const x=PAD.left+gap*i+gap/2; ctx.fillStyle='#4A5568'; ctx.font='12px Noto Sans KR'; ctx.textAlign='center'; ctx.fillText(l,x,PAD.top+cH+22); }); }
+}
+
+/* ── 1. 잘린 Y축 ── */
+function drawTruncated(badId, goodId){
+  const labels=['후보 A','후보 B','후보 C'], vals=[47.2,45.8,44.1], colors=['#4472C4','#E74C3C','#2ECC71'];
+  const W=340, H=260;
+  function draw(canvasId, minV, maxV, step, title){
+    const ctx=setupCanvas(canvasId,W,H); if(!ctx) return;
+    const cH=H-PAD.top-PAD.bottom, cW=W-PAD.left-PAD.right;
+    const toY=v=>PAD.top+cH-((v-minV)/(maxV-minV))*cH;
+    ctx.fillStyle='#1A1F36'; ctx.font='bold 12px Noto Sans KR'; ctx.textAlign='center';
+    ctx.fillText(title, W/2, 22);
+    const gap=cW/3, bW=gap*0.55;
+    gridAndAxes(ctx,W,H,minV,maxV,step,toY,labels,gap);
+    const hits=[];
+    vals.forEach((v,i)=>{
+      const x=PAD.left+gap*i+(gap-bW)/2, bH=((v-minV)/(maxV-minV))*cH;
+      ctx.fillStyle=colors[i]; ctx.beginPath(); ctx.roundRect(x,toY(v),bW,bH,[4,4,0,0]); ctx.fill();
+      ctx.fillStyle='#1A1F36'; ctx.font='bold 11px Noto Sans KR'; ctx.textAlign='center';
+      ctx.fillText(v+'%', x+bW/2, toY(v)-6);
+      hits.push({x, y:toY(v), w:bW, h:bH, html:`<b>${labels[i]}</b><br>지지율: ${v}%`});
+    });
+    attachHover(document.getElementById(canvasId), hits, 'bar');
+  }
+  draw(badId,  43, 48, 1,  '후보별 지지율 (조작된 차트)');
+  draw(goodId, 0, 100, 20, '후보별 지지율 (정직한 차트)');
+}
+
+/* ── 2. 체리 피킹 ── */
+function drawCherry(badId, goodId){
+  const W=340, H=260;
+  const badMonths=['7월','8월','9월','10월'], badVals=[320,380,410,450];
+  const goodMonths=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월'], goodVals=[500,480,420,350,310,290,320,380,410,450];
+  function drawLine(canvasId, months, vals, title, color){
+    const ctx=setupCanvas(canvasId,W,H); if(!ctx) return;
+    const n=vals.length, minV=Math.min(...vals)*0.90, maxV=Math.max(...vals)*1.06, step=50;
+    const cH=H-PAD.top-PAD.bottom, cW=W-PAD.left-PAD.right;
+    const toY=v=>PAD.top+cH-((v-minV)/(maxV-minV))*cH, toX=i=>PAD.left+(i/(n-1))*cW;
+    ctx.fillStyle='#1A1F36'; ctx.font='bold 12px Noto Sans KR'; ctx.textAlign='center'; ctx.fillText(title,W/2,22);
+    for(let v=Math.ceil(minV/step)*step; v<=maxV+0.01; v+=step){
+      const y=toY(v); ctx.strokeStyle='#E4E9F2'; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(PAD.left,y); ctx.lineTo(PAD.left+cW,y); ctx.stroke();
+      ctx.fillStyle='#9AA5B4'; ctx.font='11px Noto Sans KR'; ctx.textAlign='right'; ctx.fillText(v,PAD.left-5,y+4);
+    }
+    ctx.beginPath(); vals.forEach((v,i)=>{ i?ctx.lineTo(toX(i),toY(v)):ctx.moveTo(toX(i),toY(v)); });
+    ctx.lineTo(toX(n-1),PAD.top+cH); ctx.lineTo(PAD.left,PAD.top+cH); ctx.closePath();
+    const g=ctx.createLinearGradient(0,PAD.top,0,PAD.top+cH); g.addColorStop(0,color+'28'); g.addColorStop(1,color+'04');
+    ctx.fillStyle=g; ctx.fill();
+    ctx.beginPath(); vals.forEach((v,i)=>{ i?ctx.lineTo(toX(i),toY(v)):ctx.moveTo(toX(i),toY(v)); });
+    ctx.strokeStyle=color; ctx.lineWidth=2.5; ctx.lineJoin='round'; ctx.stroke();
+    const hits=[];
+    vals.forEach((v,i)=>{
+      const x=toX(i),y=toY(v);
+      ctx.beginPath(); ctx.arc(x,y,4.5,0,Math.PI*2); ctx.fillStyle=color; ctx.fill(); ctx.strokeStyle='white'; ctx.lineWidth=1.5; ctx.stroke();
+      ctx.fillStyle='#4A5568'; ctx.font='11px Noto Sans KR'; ctx.textAlign='center'; ctx.fillText(months[i],x,PAD.top+cH+22);
+      hits.push({cx:x,cy:y,r:10, html:`<b>${months[i]}</b><br>매출: ${v}만원`});
+    });
+    ctx.strokeStyle='#CBD5E0'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(PAD.left,PAD.top); ctx.lineTo(PAD.left,PAD.top+cH); ctx.lineTo(PAD.left+cW,PAD.top+cH); ctx.stroke();
+    attachHover(document.getElementById(canvasId), hits, 'point');
+  }
+  drawLine(badId,  badMonths,  badVals,  '매출이 꾸준히 성장 중! (조작)', '#2ECC71');
+  drawLine(goodId, goodMonths, goodVals, '올해 전체 매출 추이 (정직)', '#E74C3C');
+}
+
+/* ── 3. 시각적 왜곡 ── */
+function drawPie(canvasId, distort, title){
+  const W=340, H=260, ctx=setupCanvas(canvasId,W,H); if(!ctx) return;
+  const slices=[
+    {label:'경쟁사 A', val:32, color: distort?'#AAAAAA':'#E74C3C'},
+    {label:'우리 회사', val:28, color: distort?'#1A4FD6':'#5B8BF5'},
+    {label:'경쟁사 B', val:25, color: distort?'#CCCCCC':'#F97316'},
+    {label:'기타',     val:15, color: distort?'#DDDDDD':'#2ECC71'},
+  ];
+  ctx.fillStyle='#1A1F36'; ctx.font='bold 12px Noto Sans KR'; ctx.textAlign='center'; ctx.fillText(title,W/2,22);
+  const total=slices.reduce((s,d)=>s+d.val,0), cx=W*0.42, cy=H/2+10, r=76;
+  let ang=-Math.PI/2;
+  const hitArcs=[];
+  slices.forEach(s=>{
+    const sweep=(s.val/total)*2*Math.PI, pullR=(distort&&s.label==='우리 회사')?14:0, mid=ang+sweep/2;
+    const ox=Math.cos(mid)*pullR, oy=Math.sin(mid)*pullR;
+    ctx.beginPath(); ctx.moveTo(cx+ox,cy+oy); ctx.arc(cx+ox,cy+oy,r,ang,ang+sweep); ctx.closePath();
+    ctx.fillStyle=s.color; ctx.fill(); ctx.strokeStyle='white'; ctx.lineWidth=2.5; ctx.stroke();
+    if(sweep>0.28){ ctx.fillStyle='white'; ctx.font=`bold ${distort&&s.label==='우리 회사'?13:11}px Noto Sans KR`; ctx.textAlign='center'; ctx.fillText(s.val+'%', cx+ox+Math.cos(mid)*r*0.63, cy+oy+Math.sin(mid)*r*0.63+4); }
+    hitArcs.push({startAng:ang, endAng:ang+sweep, ox, oy, html:`<b>${s.label}</b><br>점유율: ${s.val}%`});
+    ang+=sweep;
+  });
+  const lx=cx+r+16;
+  slices.forEach((s,i)=>{ const ly=cy-slices.length*13+i*28; ctx.fillStyle=s.color; ctx.fillRect(lx,ly-10,12,12); ctx.fillStyle='#4A5568'; ctx.font='11px Noto Sans KR'; ctx.textAlign='left'; ctx.fillText(s.label,lx+16,ly); });
+  const canvas=document.getElementById(canvasId);
+  canvas.addEventListener('mousemove', e=>{
+    const rect=canvas.getBoundingClientRect(), mx=e.clientX-rect.left, my=e.clientY-rect.top;
+    let found=false;
+    for(const h of hitArcs){
+      const dx=mx-(cx+h.ox), dy=my-(cy+h.oy), dist=Math.sqrt(dx*dx+dy*dy);
+      let a=Math.atan2(dy,dx); if(a<h.startAng-0.01) a+=Math.PI*2;
+      if(dist<=r&&a>=h.startAng&&a<=h.endAng){ showTT(e,h.html); found=true; break; }
+    }
+    if(!found) hideTT(); else moveTT(e);
+  });
+  canvas.addEventListener('mouseleave', hideTT);
+}
+
+/* ── 4. 거짓 인과관계 ── */
+function drawCausation(badId, goodId){
+  const W=340, H=265, months=['1월','3월','5월','7월','9월','11월'];
+  const ice=[20,35,65,90,55,18], drown=[2,4,9,15,8,1];
+
+  // BAD: dual-axis line
+  {
+    const ctx=setupCanvas(badId,W,H); if(!ctx) return;
+    const n=months.length, cH=H-PAD.top-PAD.bottom, PAD_R=46, cW2=W-PAD.left-PAD_R;
+    const maxIce=100, maxDrown=16;
+    ctx.fillStyle='#1A1F36'; ctx.font='bold 11px Noto Sans KR'; ctx.textAlign='center'; ctx.fillText('아이스크림이 익사를 유발?! (조작)',W/2,22);
+    // legend — 두 줄
+    ctx.fillStyle='#5B8BF5'; ctx.fillRect(PAD.left,PAD.top-36,9,9);
+    ctx.fillStyle='#333'; ctx.font='10px Noto Sans KR'; ctx.textAlign='left'; ctx.fillText('아이스크림 판매량',PAD.left+12,PAD.top-29);
+    ctx.fillStyle='#E74C3C'; ctx.fillRect(PAD.left,PAD.top-22,9,9);
+    ctx.fillStyle='#333'; ctx.fillText('익사 사고 건수',PAD.left+12,PAD.top-15);
+    [0,20,40,60,80,100].forEach(v=>{ const y=PAD.top+cH-(v/maxIce)*cH; ctx.strokeStyle='#E4E9F2'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(PAD.left,y); ctx.lineTo(PAD.left+cW2,y); ctx.stroke(); ctx.fillStyle='#5B8BF5'; ctx.font='10px Noto Sans KR'; ctx.textAlign='right'; ctx.fillText(v,PAD.left-4,y+3); });
+    [0,4,8,12,16].forEach(v=>{ const y=PAD.top+cH-(v/maxDrown)*cH; ctx.fillStyle='#E74C3C'; ctx.font='10px Noto Sans KR'; ctx.textAlign='left'; ctx.fillText(v,PAD.left+cW2+4,y+3); });
+    const toX=i=>PAD.left+(i/(n-1))*cW2, toYI=v=>PAD.top+cH-(v/maxIce)*cH, toYD=v=>PAD.top+cH-(v/maxDrown)*cH;
+    ctx.beginPath(); ice.forEach((v,i)=>i?ctx.lineTo(toX(i),toYI(v)):ctx.moveTo(toX(i),toYI(v))); ctx.strokeStyle='#5B8BF5'; ctx.lineWidth=2.2; ctx.lineJoin='round'; ctx.stroke();
+    ctx.beginPath(); drown.forEach((v,i)=>i?ctx.lineTo(toX(i),toYD(v)):ctx.moveTo(toX(i),toYD(v))); ctx.strokeStyle='#E74C3C'; ctx.lineWidth=2.2; ctx.lineJoin='round'; ctx.stroke();
+    const hits=[];
+    ice.forEach((v,i)=>{
+      const x=toX(i),y=toYI(v); ctx.beginPath(); ctx.arc(x,y,4.5,0,Math.PI*2); ctx.fillStyle='#5B8BF5'; ctx.fill(); ctx.strokeStyle='white'; ctx.lineWidth=1.5; ctx.stroke();
+      ctx.fillStyle='#4A5568'; ctx.font='11px Noto Sans KR'; ctx.textAlign='center'; ctx.fillText(months[i],toX(i),PAD.top+cH+20);
+      hits.push({cx:x,cy:y,r:11, html:`<b>${months[i]}</b><br>🍦 아이스크림: ${v}만 개<br>🌊 익사 사고: ${drown[i]}건`});
+    });
+    drown.forEach((v,i)=>{ const x=toX(i),y=toYD(v); ctx.beginPath(); ctx.arc(x,y,4.5,0,Math.PI*2); ctx.fillStyle='#E74C3C'; ctx.fill(); ctx.strokeStyle='white'; ctx.lineWidth=1.5; ctx.stroke(); });
+    ctx.strokeStyle='#CBD5E0'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(PAD.left,PAD.top); ctx.lineTo(PAD.left,PAD.top+cH); ctx.lineTo(PAD.left+cW2,PAD.top+cH); ctx.stroke();
+    attachHover(document.getElementById(badId), hits, 'point');
+  }
+
+  // GOOD: grouped bar
+  {
+    const ctx=setupCanvas(goodId,W,H); if(!ctx) return;
+    const n=months.length, cH=H-PAD.top-PAD.bottom, cW=W-PAD.left-PAD.right;
+    const maxIce=100, gap=cW/n, bW=gap*0.35;
+    ctx.fillStyle='#1A1F36'; ctx.font='bold 11px Noto Sans KR'; ctx.textAlign='center'; ctx.fillText('두 변수 모두 "기온"의 영향 (정직)',W/2,22);
+    // legend — 두 줄
+    ctx.fillStyle='rgba(91,139,245,0.85)'; ctx.fillRect(PAD.left,PAD.top-36,9,9);
+    ctx.fillStyle='#333'; ctx.font='10px Noto Sans KR'; ctx.textAlign='left'; ctx.fillText('아이스크림 판매량(만 개)',PAD.left+12,PAD.top-29);
+    ctx.fillStyle='rgba(231,76,60,0.85)'; ctx.fillRect(PAD.left,PAD.top-22,9,9);
+    ctx.fillStyle='#333'; ctx.fillText('익사 사고 건수',PAD.left+12,PAD.top-15);
+    [0,20,40,60,80,100].forEach(v=>{ const y=PAD.top+cH-(v/maxIce)*cH; ctx.strokeStyle='#E4E9F2'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(PAD.left,y); ctx.lineTo(PAD.left+cW,y); ctx.stroke(); ctx.fillStyle='#9AA5B4'; ctx.font='10px Noto Sans KR'; ctx.textAlign='right'; ctx.fillText(v,PAD.left-4,y+3); });
+    const hits=[];
+    ice.forEach((v,i)=>{ const x=PAD.left+gap*i+(gap-bW*2-2)/2, bH=(v/maxIce)*cH; ctx.fillStyle='rgba(91,139,245,0.82)'; ctx.beginPath(); ctx.roundRect(x,PAD.top+cH-bH,bW,bH,[2,2,0,0]); ctx.fill(); hits.push({x,y:PAD.top+cH-bH,w:bW,h:bH,html:`<b>${months[i]}</b><br>🍦 아이스크림: ${v}만 개`}); });
+    drown.forEach((v,i)=>{ const x=PAD.left+gap*i+(gap-bW*2-2)/2+bW+2, bH=(v/maxIce*6.25)*cH; ctx.fillStyle='rgba(231,76,60,0.82)'; ctx.beginPath(); ctx.roundRect(x,PAD.top+cH-bH,bW,bH,[2,2,0,0]); ctx.fill(); hits.push({x,y:PAD.top+cH-bH,w:bW,h:bH,html:`<b>${months[i]}</b><br>🌊 익사 사고: ${v}건`}); });
+    months.forEach((m,i)=>{ ctx.fillStyle='#4A5568'; ctx.font='11px Noto Sans KR'; ctx.textAlign='center'; ctx.fillText(m,PAD.left+gap*i+gap/2,PAD.top+cH+20); });
+    ctx.strokeStyle='#CBD5E0'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(PAD.left,PAD.top); ctx.lineTo(PAD.left,PAD.top+cH); ctx.lineTo(PAD.left+cW,PAD.top+cH); ctx.stroke();
+    attachHover(document.getElementById(goodId), hits, 'bar');
+  }
+}
+
+
+
+/* ============================================================
+   CASE DEFINITIONS
+============================================================ */
+const CASES = [
+  {
+    id: 0,
+    title: '사례 분석: 잘린 Y축 (Truncated Y-Axis)',
+    desc: 'Y축을 0에서 시작하지 않고, 데이터 범위에 맞춰 잘라냅니다. 작은 차이가 매우 큰 것처럼 보이게 됩니다.',
+    problem: '후보 A(47.2%)와 후보 C(44.1%)의 차이는 실제로 3.1%p에 불과하지만, 잘린 Y축 때문에 후보 A가 압도적으로 앞서는 것처럼 보입니다.',
+    find: 'Y축이 0에서 시작하는지 확인하세요!',
+    quizQ: '이 막대 차트에서 속이는 기법은 무엇인가요?',
+    opts: ['Y축을 0이 아닌 43부터 시작함','데이터를 지어냄','색깔로 혼란을 줌','범례가 없음'],
+    correct: 0,
+    fb: '✅ Y축이 43부터 시작하여 3%p 차이가 마치 몇 배 차이인 것처럼 보입니다. Y축을 0부터 시작하면 실제 차이가 작다는 것을 알 수 있습니다.',
+    drawFn: () => { drawTruncated('c0bad','c0good'); },
+  },
+  {
+    id: 1,
+    title: '사례 분석: 체리 피킹 (Cherry-Picking)',
+    desc: '자신에게 유리한 기간의 데이터만 선택적으로 보여줍니다. 전체 추세와 반대되는 결론을 이끌어낼 수 있습니다.',
+    problem: '7~10월의 상승 구간만 보여주면 "꾸준한 성장"처럼 보이지만, 1~6월에는 큰 폭으로 하락했습니다. 연초(500만원) 대비 10월(450만원)은 오히려 감소입니다!',
+    find: '차트의 시작점과 끝점을 확인하세요. 전체 기간이 표시되어 있나요?',
+    quizQ: '이 매출 차트에서 사용된 속이는 기법은?',
+    opts: ['Y축을 잘라냄','유리한 기간만 선택적으로 보여줌','단위를 바꿈','3D 효과로 왜곡함'],
+    correct: 1,
+    fb: '✅ 7~10월만 보여주면 매출이 성장 중인 것처럼 보이지만, 전체 데이터를 보면 연초 대비 오히려 감소 추세입니다. 이것이 체리 피킹입니다.',
+    drawFn: () => { drawCherry('c1bad','c1good'); },
+  },
+  {
+    id: 2,
+    title: '사례 분석: 시각적 왜곡 (Visual Distortion)',
+    desc: '특정 항목을 끌어내거나(pull out), 색상 대비를 강조하거나, 3D 효과를 사용하여 실제보다 크게/작게 보이게 합니다.',
+    problem: '우리 회사는 28%로 실제로는 경쟁사 A(32%)보다 작지만, 조각을 끌어내고 진한 색을 사용하여 가장 큰 것처럼 보이게 만들었습니다.',
+    find: '실제 수치(%)를 직접 비교하세요. 시각적 크기에만 의존하지 마세요!',
+    quizQ: '이 원형 차트에서 "우리 회사"가 가장 커 보이는 이유는?',
+    opts: ['실제로 점유율이 가장 높아서','조각을 끌어내고 진한 색으로 강조해서','데이터를 조작해서','범례를 숨겨서'],
+    correct: 1,
+    fb: '✅ 우리 회사(28%)는 실제로 경쟁사 A(32%)보다 작지만, 조각을 바깥으로 끌어내고 진한 파란색을 사용하여 시각적으로 가장 눈에 띄게 만들었습니다.',
+    drawFn: () => {
+      drawPie('c2bad', true,  '시장 점유율 (조작: 우리 회사 강조)');
+      drawPie('c2good', false, '시장 점유율 (정직한 표현)');
+    },
+  },
+  {
+    id: 3,
+    title: '사례 분석: 거짓 인과관계 (Spurious Correlation)',
+    desc: '두 변수를 같은 차트에 겹쳐 놓으면, 마치 인과관계가 있는 것처럼 보입니다. 하지만 상관관계는 인과관계가 아닙니다!',
+    problem: '아이스크림 판매량과 익사 사고가 같이 증가하지만, 아이스크림이 익사를 유발하는 것이 아닙니다. 둘 다 "더운 날씨(기온)"라는 공통 원인의 영향을 받을 뿐입니다.',
+    find: '"A가 증가할 때 B도 증가"는 상관관계일 뿐, A가 B의 원인이라는 뜻은 아닙니다.',
+    quizQ: '아이스크림 판매량과 익사 사고의 진짜 관계는?',
+    opts: ['아이스크림이 익사를 유발한다','익사 사고가 아이스크림 판매를 증가시킨다','둘 다 기온이라는 제3의 변수의 영향을 받는다','아무 관계도 없다'],
+    correct: 2,
+    fb: '✅ 두 변수 모두 "기온 상승"의 영향을 받습니다. 더우면 아이스크림을 더 먹고, 수영/물놀이를 더 많이 하여 사고도 증가합니다. 이것이 "제3변수 문제"입니다.',
+    drawFn: () => { drawCausation('c3bad','c3good'); },
+  },
+];
+
+/* ============================================================
+   CASE RENDERING
+============================================================ */
+let currentCase = 0;
+
+function renderCase(idx) {
+  const c = CASES[idx];
+  document.getElementById('case-panel-title').textContent = c.title.replace('사례 분석: ','');
+
+  document.getElementById('case-panel-body').innerHTML = `
+    <div class="case-desc">${c.desc}</div>
+    <div class="dual-chart">
+      <div>
+        <div class="chart-col-label bad">조작된 차트</div>
+        <div class="chart-box" style="padding:20px 14px 14px;"><canvas id="c${idx}bad"></canvas></div>
+      </div>
+      <div>
+        <div class="chart-col-label good">정직한 차트</div>
+        <div class="chart-box" style="padding:20px 14px 14px;"><canvas id="c${idx}good"></canvas></div>
+      </div>
+    </div>
+    <div class="problem-box">
+      <div class="problem-label">🔴 무엇이 문제인가?</div>
+      <div class="problem-text">${c.problem}</div>
+    </div>
+    <div class="find-box">
+      <div class="find-label">🔍 어떻게 발견하나?</div>
+      <div class="find-text">${c.find}</div>
+    </div>
+    <div class="case-quiz-block">
+      <div class="quiz-q-label">${c.quizQ}</div>
+      <div class="quiz-opts">
+        ${c.opts.map((o,i)=>`<button class="qopt" onclick="caseAns(this,${i===c.correct},'casefb${idx}')">${o}</button>`).join('')}
+      </div>
+      <div class="quiz-fb" id="casefb${idx}">${c.fb}</div>
+    </div>
+    <div class="case-nav">
+      <button class="cnav-btn prev" onclick="switchCase(${idx-1})" ${idx===0?'disabled':''}>← 이전 사례</button>
+      <span class="cnav-progress">${idx+1} / ${CASES.length}</span>
+      <button class="cnav-btn next" onclick="switchCase(${idx+1})" ${idx===CASES.length-1?'disabled':''}>다음 사례 →</button>
+    </div>`;
+
+  // draw charts after DOM paint
+  requestAnimationFrame(() => requestAnimationFrame(() => c.drawFn()));
+}
+
+function switchCase(idx) {
+  if (idx < 0 || idx >= CASES.length) return;
+  currentCase = idx;
+  // update card highlights
+  CASES.forEach((_, i) => {
+    document.getElementById('tc-' + i).classList.toggle('active', i === idx);
+  });
+  document.getElementById('case-panel-title').textContent = CASES[idx].title.replace('사례 분석: ','');
+  renderCase(idx);
+  // scroll to panel smoothly
+  document.getElementById('case-panel').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+/* ============================================================
+   QUIZ HELPERS
+============================================================ */
+function caseAns(btn, isCorrect, fbId) {
+  const wrap = btn.closest('.case-quiz-block');
+  if (!wrap || wrap.dataset.answered) return;
+  wrap.dataset.answered = '1';
+  wrap.querySelectorAll('.qopt').forEach(b => {
+    b.disabled = true;
+    if (b === btn) b.classList.add(isCorrect ? 'qcorrect' : 'qwrong');
+    else if (!isCorrect && b.onclick && b.onclick.toString().includes('true')) b.classList.add('qreveal');
+  });
+  const fb = document.getElementById(fbId);
+  if (fb) fb.style.display = 'block';
+}
+
+function compAns(btn, isCorrect, fbId) {
+  const block = btn.closest('.comp-q');
+  if (block.dataset.answered) return;
+  block.dataset.answered = '1';
+  block.querySelectorAll('.qopt').forEach(b => {
+    b.disabled = true;
+    if (b === btn) b.classList.add(isCorrect ? 'qcorrect' : 'qwrong');
+    else if (!isCorrect && b.onclick && b.onclick.toString().includes('true')) b.classList.add('qreveal');
+  });
+  document.getElementById(fbId).style.display = 'block';
+}
+
+function toggleCase(header) {
+  const body = header.nextElementSibling;
+  const tog = header.querySelector('.case-toggle');
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : 'block';
+  tog.textContent = open ? '▼ 펼치기' : '▲ 접기';
+}
+
+function toggleComp(header) {
+  const body = header.nextElementSibling;
+  const tog = header.querySelector('.comp-toggle');
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : 'block';
+  tog.textContent = open ? '▼ 펼치기' : '▲ 접기';
+}
+
+/* ============================================================
+   INIT
+============================================================ */
+window.addEventListener('load', () => { renderCase(0); });
+</script>
+</body>
+</html>
