@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4-2 올바른 차트 선택하기 | 인공지능 기초 with 데이터 분석</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary:#3B6FE8;--primary-light:#EEF3FF;
+    --accent:#FF6B35;--accent-light:#FFF0EB;
+    --green:#2ECC71;--green-light:#E8F8F0;
+    --red:#E74C3C;--red-light:#FDECEA;
+    --yellow:#F1C40F;--yellow-light:#FEFCE8;
+    --teal:#0EA5A0;--teal-light:#EDFAFA;
+    --purple:#8B5CF6;--purple-light:#F3F0FF;
+    --text-primary:#1A1F36;--text-secondary:#4A5568;--text-muted:#9AA5B4;
+    --bg:#F7F8FC;--card-bg:#FFFFFF;--border:#E4E9F2;
+    --radius:12px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text-primary);min-height:100vh;font-size:15px;line-height:1.7;}
+  .topbar{position:sticky;top:0;z-index:200;background:#fff;border-bottom:1px solid var(--border);padding:0 32px;height:52px;display:flex;align-items:center;justify-content:space-between;}
+  .topbar-home{display:flex;align-items:center;gap:10px;text-decoration:none;}
+  .topbar-logo-icon{width:30px;height:30px;background:linear-gradient(135deg,var(--primary),#6B9DFF);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;}
+  .topbar-logo-text{font-size:13px;font-weight:700;color:var(--text-primary);}
+  .topbar-back-btn{background:var(--primary-light);color:var(--primary);border:1px solid #C5D5FF;border-radius:8px;padding:6px 14px;font-size:13px;font-weight:600;text-decoration:none;transition:all .15s;}
+  .topbar-back-btn:hover{background:var(--primary);color:white;}
+  .main{width:100%;}
+  .content{max-width:860px;margin:0 auto;padding:40px 40px 80px;}
+  .breadcrumb{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);margin-bottom:24px;}
+  .breadcrumb span{color:var(--accent);font-weight:500;}
+  .lesson-header{background:linear-gradient(135deg,#4C1D95,#7C3AED);border-radius:16px;padding:32px 36px;color:white;margin-bottom:32px;position:relative;overflow:hidden;}
+  .lesson-header::before{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,0.06);}
+  .lesson-meta{display:flex;align-items:center;gap:10px;font-size:12px;opacity:.85;margin-bottom:10px;}
+  .lesson-meta-badge{background:rgba(255,255,255,0.2);border-radius:20px;padding:3px 10px;font-weight:500;}
+  .lesson-title{font-size:28px;font-weight:700;margin-bottom:6px;}
+  .lesson-subtitle{font-size:15px;opacity:.85;}
+  .intro-text{background:var(--card-bg);border-radius:var(--radius);padding:22px 28px;border:1px solid var(--border);color:var(--text-secondary);font-size:15px;line-height:1.85;margin-bottom:28px;}
+  .section-title{font-size:18px;font-weight:700;color:var(--text-primary);margin:32px 0 16px;display:flex;align-items:center;gap:10px;padding-bottom:12px;border-bottom:2px solid #DDD6FE;}
+  .section-title-icon{width:32px;height:32px;background:#EDE9FE;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+  .chart-type-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:28px;}
+  .chart-type-card{background:var(--card-bg);border:1.5px solid var(--border);border-radius:var(--radius);padding:14px 8px;text-align:center;}
+  .chart-type-icon{font-size:22px;margin-bottom:5px;}
+  .chart-type-name{font-size:12px;font-weight:700;color:var(--text-primary);margin-bottom:3px;}
+  .chart-type-when{font-size:11px;color:var(--text-muted);line-height:1.4;}
+  .decision-flow{display:flex;flex-direction:column;margin-bottom:24px;background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+  .dq-row{display:flex;align-items:center;border-bottom:1px solid var(--border);}
+  .dq-row:last-child{border-bottom:none;}
+  .dq-q{flex:1;padding:12px 18px;font-size:13.5px;font-weight:600;color:var(--text-primary);}
+  .dq-yes{background:var(--green-light);border-left:1px solid var(--border);padding:10px 14px;font-size:12px;font-weight:700;color:#1A7A44;white-space:nowrap;}
+  .dq-no{background:var(--bg);border-left:1px solid var(--border);padding:10px 14px;font-size:12px;color:var(--text-muted);white-space:nowrap;}
+  .tip-box{background:var(--yellow-light);border:1.5px solid #F9E04B;border-radius:var(--radius);padding:14px 20px;margin:16px 0;display:flex;gap:10px;font-size:13.5px;color:#6B5000;}
+  .tip-label{background:var(--yellow);color:#5A4000;font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;flex-shrink:0;margin-top:3px;}
+  .practice-box{border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:28px;}
+  .practice-header{background:var(--text-primary);color:white;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;}
+  .practice-header-left{display:flex;align-items:center;gap:10px;}
+  .practice-badge{background:var(--purple);color:white;font-size:10px;font-weight:700;padding:2px 8px;border-radius:12px;}
+  .practice-title-text{font-size:15px;font-weight:600;}
+  .practice-toggle{font-size:12px;opacity:.75;}
+  .practice-body{background:var(--card-bg);padding:24px 28px;}
+
+  /* SCENARIO */
+  .scenario-card{background:#F8F6FF;border:1.5px solid #D4C8FF;border-radius:var(--radius);padding:16px 20px;margin-bottom:14px;}
+  .scenario-tag{font-size:11px;font-weight:700;color:var(--purple);margin-bottom:6px;}
+  .scenario-title{font-size:16px;font-weight:700;color:var(--text-primary);margin-bottom:3px;}
+  .scenario-type{font-size:12.5px;color:var(--text-muted);}
+  .chart-sel-btns{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+  .chart-sel-btn{padding:8px 18px;border-radius:8px;border:1.5px solid var(--border);background:white;font-size:13px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;color:var(--text-secondary);transition:all .18s;}
+  .chart-sel-btn:hover:not(:disabled){border-color:var(--purple);color:var(--purple);background:var(--purple-light);}
+  .chart-sel-btn.sel-active{background:var(--purple);border-color:var(--purple);color:white;font-weight:700;}
+  .chart-sel-btn.sel-correct{background:var(--green-light)!important;border-color:var(--green)!important;color:#1A7A44!important;font-weight:700!important;}
+  .chart-sel-btn.sel-wrong{background:var(--red-light)!important;border-color:var(--red)!important;color:var(--red)!important;font-weight:700!important;}
+  .chart-sel-btn.sel-reveal{background:var(--green-light)!important;border-color:var(--green)!important;color:#1A7A44!important;}
+  .chart-sel-btn:disabled{cursor:default;}
+  .chart-preview-wrap{background:white;border:1px solid var(--border);border-radius:var(--radius);padding:16px 16px 10px;margin-bottom:12px;min-height:220px;display:flex;align-items:center;justify-content:center;}
+  .chart-preview-wrap canvas{display:block;}
+  .preview-placeholder{color:var(--text-muted);font-size:13px;text-align:center;line-height:1.8;}
+  .verdict-section{border-top:1px dashed var(--border);padding-top:14px;margin-top:2px;}
+  .verdict-label{font-size:13px;color:var(--text-secondary);margin-bottom:10px;font-weight:600;display:flex;align-items:center;gap:6px;}
+  .verdict-label::before{content:'';width:3px;height:14px;background:var(--accent);border-radius:2px;}
+  .verdict-btns{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;}
+  .verdict-btn{padding:8px 18px;border-radius:8px;border:1.5px solid var(--border);background:white;font-size:13px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;color:var(--text-secondary);transition:all .15s;}
+  .verdict-btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent);background:var(--accent-light);}
+  .verdict-btn.v-correct{background:var(--green-light);border-color:var(--green);color:#1A7A44;font-weight:700;}
+  .verdict-btn.v-wrong{background:var(--red-light);border-color:var(--red);color:var(--red);font-weight:700;}
+  .verdict-btn.v-reveal{background:var(--green-light);border-color:var(--green);color:#1A7A44;}
+  .verdict-btn:disabled{cursor:default;}
+  .verdict-feedback{display:none;padding:12px 16px;border-radius:8px;font-size:13.5px;line-height:1.65;animation:fadeIn .25s ease;margin-top:6px;}
+  .verdict-feedback.vf-ok{background:var(--green-light);border:1px solid var(--green);color:#1A5A30;}
+  .verdict-feedback.vf-ng{background:var(--red-light);border:1px solid var(--red);color:#6A1A1A;}
+  .scenario-nav{display:flex;align-items:center;justify-content:space-between;margin-top:16px;padding-top:14px;border-top:1px solid var(--border);}
+  .scen-btn{padding:8px 20px;border-radius:8px;color:white;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all .15s;}
+  .scen-btn:disabled{opacity:.38;cursor:not-allowed;}
+  .scen-btn.prev-btn{background:var(--text-secondary);}
+  .scen-btn.next-btn{background:var(--accent);}
+  .scen-btn.next-btn:hover:not(:disabled){background:#E85A20;}
+  .dots{display:flex;gap:6px;}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:background .2s;}
+  .dot.dot-active{background:var(--purple);}
+  .dot.dot-done{background:var(--green);}
+
+  /* CHART CARD GRID — 3+2 layout like screenshot */
+  .chart-card-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px;}
+  @media(max-width:620px){.chart-card-grid{grid-template-columns:1fr 1fr;}}
+  .cc{border-radius:14px;padding:18px 16px;display:flex;flex-direction:column;gap:6px;}
+  .cc-bar    {background:#EFF3FF;border:1.5px solid #C8D8FF;}
+  .cc-line   {background:#EDFDF5;border:1.5px solid #A8E6C5;}
+  .cc-pie    {background:#FFFBEB;border:1.5px solid #F9E04B;}
+  .cc-scatter{background:#F0F4FF;border:1.5px solid #C0CCFF;}
+  .cc-hist   {background:#FFF0F3;border:1.5px solid #FFC5CC;}
+  /* last row: 2 cards centered — span trick */
+  .cc:nth-child(4){grid-column:1;}
+  .cc:nth-child(5){grid-column:2;}
+  .cc-header{display:flex;align-items:center;gap:8px;margin-bottom:4px;}
+  .cc-emoji{font-size:22px;line-height:1;}
+  .cc-title{font-size:15px;font-weight:700;color:var(--text-primary);}
+  .cc-when{font-size:13.5px;color:var(--text-secondary);line-height:1.55;}
+  .cc-data{font-size:12px;color:var(--text-muted);font-weight:500;}
+  .cc-ex{font-size:12px;color:var(--text-muted);line-height:1.55;}
+
+  /* DECISION GUIDE — image style */
+  .dg-flow{display:flex;flex-direction:column;gap:8px;margin-bottom:28px;}
+  .dg-row{background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:14px 18px;display:flex;align-items:flex-start;gap:14px;}
+  .dg-qnum{width:28px;height:28px;background:var(--primary-light);border:1.5px solid #C5D5FF;border-radius:50%;font-size:11px;font-weight:700;color:var(--primary);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .dg-body{flex:1;}
+  .dg-question{font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:6px;}
+  .dg-answers{display:flex;flex-wrap:wrap;gap:12px;font-size:12.5px;}
+  .dg-yes{color:#1A7A44;font-weight:600;}
+  .dg-no{color:var(--text-muted);}
+
+  /* DND NEW LAYOUT */
+  .dnd-pool{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;padding:14px 16px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);}
+  .dnd-zone-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
+  @media(max-width:620px){.dnd-zone-grid{grid-template-columns:repeat(2,1fr);}}
+  /* override dnd-zone for grid layout */
+  .dnd-zone-grid .dnd-zone{min-height:80px;}
+  .dnd-zone-grid .dnd-zone-head{font-size:13px;font-weight:700;text-align:center;justify-content:center;margin-bottom:8px;}
+
+  /* ANSWER BOX */
+  .dnd-answer-box{background:var(--green-light);border:1px solid var(--green);border-radius:var(--radius);margin-bottom:10px;overflow:hidden;}
+  .dnd-answer-summary{padding:10px 16px;font-size:13.5px;font-weight:700;color:#1A7A44;cursor:pointer;list-style:none;display:flex;align-items:center;gap:6px;user-select:none;}
+  .dnd-answer-summary::-webkit-details-marker{display:none;}
+  .dnd-answer-toggle{margin-left:auto;font-size:12px;font-weight:500;color:#2A9A54;}
+  .dnd-answer-body{padding:10px 18px 14px;border-top:1px solid rgba(46,204,113,0.3);}
+  .dnd-answer-row{font-size:13px;color:#1A5A30;padding:4px 0;border-bottom:1px dashed rgba(46,204,113,0.2);}
+  .dnd-answer-row:last-child{border-bottom:none;}
+  .dnd-col-label{font-size:12px;font-weight:700;color:var(--text-muted);margin-bottom:8px;}
+  .dnd-source-list{display:flex;flex-direction:column;gap:7px;}
+  .dnd-card{background:white;border:1.5px solid #C8BAFF;border-radius:8px;padding:10px 13px;font-size:13px;font-weight:500;color:var(--text-primary);cursor:grab;user-select:none;transition:all .15s;display:flex;align-items:center;gap:7px;}
+  .dnd-card:hover{border-color:var(--purple);background:var(--purple-light);}
+  .dnd-card.is-dragging{opacity:.4;}
+  .dnd-card.is-placed{opacity:.28;pointer-events:none;}
+  .dnd-card.tap-sel{border-color:var(--accent);background:var(--accent-light);outline:2px solid var(--accent);}
+  .dnd-zones{display:flex;flex-direction:column;gap:9px;}
+  .dnd-zone{border:2px dashed #D0C8F0;border-radius:10px;padding:9px 12px;min-height:60px;transition:all .18s;background:white;}
+  .dnd-zone.dz-over{border-color:var(--purple);background:#F5F0FF;}
+  .dnd-zone-head{font-size:12px;font-weight:700;color:var(--text-secondary);margin-bottom:6px;display:flex;align-items:center;gap:5px;}
+  .dnd-zone-body{display:flex;flex-wrap:wrap;gap:5px;min-height:24px;}
+  .dnd-chip{background:white;border:1.5px solid #C8BAFF;border-radius:6px;padding:4px 9px;font-size:12px;color:var(--text-primary);cursor:pointer;display:flex;align-items:center;gap:4px;}
+  .dnd-chip:hover{border-color:var(--red);color:var(--red);}
+  .chip-ok{border-color:var(--green)!important;background:var(--green-light)!important;color:#1A7A44!important;cursor:default!important;}
+  .chip-ng{border-color:var(--red)!important;background:var(--red-light)!important;color:var(--red)!important;cursor:default!important;}
+  .dnd-check-btn{width:100%;padding:12px;border-radius:9px;background:var(--teal);color:white;border:none;font-size:14px;font-weight:600;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all .15s;}
+  .dnd-check-btn:hover:not(:disabled){background:#0A8A85;}
+  .dnd-check-btn:disabled{opacity:.5;cursor:not-allowed;}
+  .dnd-result{display:none;padding:14px 18px;border-radius:var(--radius);font-size:13.5px;line-height:1.7;margin-top:10px;animation:fadeIn .25s ease;}
+  .dnd-result.show{display:block;}
+  .dnd-result-row{padding:5px 0;display:flex;gap:8px;align-items:flex-start;font-size:13px;border-bottom:1px dashed rgba(0,0,0,0.06);}
+  .dnd-result-row:last-child{border-bottom:none;}
+
+  /* QUIZ */
+  .quiz-block{margin-bottom:20px;}
+  .quiz-sit{background:#F8F6FF;border:1px solid #D4C8FF;border-radius:8px;padding:12px 16px;margin-bottom:10px;font-size:13.5px;color:var(--text-secondary);}
+  .quiz-q{font-size:14.5px;font-weight:600;color:var(--text-primary);margin-bottom:10px;display:flex;gap:8px;align-items:flex-start;}
+  .quiz-q::before{content:'Q';background:var(--purple);color:white;font-size:11px;font-weight:700;padding:2px 7px;border-radius:5px;flex-shrink:0;margin-top:2px;}
+  .quiz-opts{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;}
+  .quiz-btn{padding:8px 16px;border-radius:8px;border:1.5px solid var(--border);background:white;font-size:13px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;color:var(--text-secondary);transition:all .15s;}
+  .quiz-btn:hover:not(:disabled){border-color:var(--purple);color:var(--purple);background:var(--purple-light);}
+  .quiz-btn.qb-correct{background:var(--green-light);border-color:var(--green);color:#1A7A44;font-weight:700;}
+  .quiz-btn.qb-wrong{background:var(--red-light);border-color:var(--red);color:var(--red);font-weight:700;}
+  .quiz-btn:disabled{cursor:default;}
+  .quiz-fb{display:none;padding:12px 16px;border-radius:8px;font-size:13.5px;line-height:1.65;animation:fadeIn .25s ease;margin-top:4px;background:var(--green-light);border:1px solid var(--green);color:#1A5A30;}
+
+  .summary-box{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:26px 30px;margin-bottom:24px;}
+  .summary-title{font-size:15px;font-weight:700;color:var(--text-primary);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+  .summary-title::before{content:'';width:4px;height:18px;background:var(--purple);border-radius:2px;}
+  .summary-list{list-style:none;}
+  .summary-list li{font-size:14px;color:var(--text-secondary);padding:8px 0;display:flex;align-items:flex-start;gap:10px;border-bottom:1px dashed var(--border);}
+  .summary-list li:last-child{border-bottom:none;}
+  .summary-list li::before{content:'✓';color:var(--green);font-weight:700;flex-shrink:0;margin-top:1px;}
+  .nav-buttons{display:flex;justify-content:space-between;align-items:center;margin-top:40px;padding-top:24px;border-top:1px solid var(--border);}
+  .btn{padding:12px 24px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all .15s;display:flex;align-items:center;gap:8px;border:none;}
+  .btn-secondary{background:var(--bg);color:var(--text-secondary);border:1px solid var(--border);}
+  .btn-secondary:hover{background:var(--border);}
+  .btn-primary{background:var(--accent);color:white;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:translateY(0);}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="topbar-home" href="index.html">
+    <div class="topbar-logo-icon">📊</div>
+    <div class="topbar-logo-text">인공지능 기초 with 데이터 분석</div>
+  </a>
+  <a class="topbar-back-btn" href="index.html">⌂ 메인으로</a>
+</header>
+<main class="main">
+<div class="content">
+  <div class="breadcrumb">홈 › 시각화로 이야기하기 › <span>4-2 올바른 차트 선택하기</span></div>
+  <div class="lesson-header">
+    <div class="lesson-meta"><span class="lesson-meta-badge">📊 4단원 · 4-2</span><span>⏱ 20분</span></div>
+    <div class="lesson-title">올바른 차트 선택하기</div>
+    <div class="lesson-subtitle">데이터 유형별 차트 매칭</div>
+  </div>
+  <div class="intro-text">
+    차트를 읽을 줄 아는 것도 중요하지만, <strong>올바른 차트를 선택하는 능력은 더욱 중요합니다.</strong> 잘못된 차트를 선택하면 데이터의 핵심 메시지가 왜곡되거나 숨겨질 수 있습니다.<br><br>
+    이번 레슨에서는 데이터의 특성에 따라 어떤 차트가 적합한지 판단하는 방법을 배웁니다.
+  </div>
+  <div style="background:linear-gradient(135deg,var(--purple-light),#F0F9FF);border:1.5px solid #D4C8FF;border-radius:var(--radius);padding:20px 26px;margin-bottom:24px;">
+    <div style="display:inline-flex;align-items:center;gap:6px;background:var(--purple);color:white;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;margin-bottom:10px;">핵심 원칙</div>
+    <div style="font-size:14px;color:var(--text-secondary);line-height:1.75;"><strong>"데이터로 하고 싶은 이야기가 무엇인가?"</strong>를 먼저 정하고, 그 이야기에 가장 잘 맞는 차트를 선택합니다.</div>
+  </div>
+  <div class="section-title"><div class="section-title-icon">📊</div>주요 차트 유형과 용도</div>
+  <div class="chart-card-grid">
+    <div class="cc cc-bar">
+      <div class="cc-header"><span class="cc-emoji">📊</span><span class="cc-title">막대 차트</span></div>
+      <div class="cc-when"><strong>언제?</strong> 범주별 크기를 비교할 때</div>
+      <div class="cc-data">데이터: 범주형(X) + 수치형(Y)</div>
+      <div class="cc-ex">과목별 성적 · 반별 학생 수 · 브랜드별 판매량</div>
+    </div>
+    <div class="cc cc-line">
+      <div class="cc-header"><span class="cc-emoji">📈</span><span class="cc-title">꺾은선 차트</span></div>
+      <div class="cc-when"><strong>언제?</strong> 시간에 따른 변화를 보여줄 때</div>
+      <div class="cc-data">데이터: 시간(X) + 수치형(Y)</div>
+      <div class="cc-ex">월별 기온 변화 · 연도별 인구 · 일별 주가</div>
+    </div>
+    <div class="cc cc-pie">
+      <div class="cc-header"><span class="cc-emoji">🥧</span><span class="cc-title">원형 차트</span></div>
+      <div class="cc-when"><strong>언제?</strong> 전체 대비 비율을 보여줄 때</div>
+      <div class="cc-data">데이터: 범주형 + 비율</div>
+      <div class="cc-ex">교통수단 비율 · 예산 구성 · 시장 점유율</div>
+    </div>
+    <div class="cc cc-scatter">
+      <div class="cc-header"><span class="cc-emoji">🔵</span><span class="cc-title">산점도</span></div>
+      <div class="cc-when"><strong>언제?</strong> 두 수치 변수의 관계를 볼 때</div>
+      <div class="cc-data">데이터: 수치형(X) + 수치형(Y)</div>
+      <div class="cc-ex">키와 몸무게 · 공부 시간과 성적 · 온도와 아이스크림 판매량</div>
+    </div>
+    <div class="cc cc-hist">
+      <div class="cc-header"><span class="cc-emoji">📶</span><span class="cc-title">히스토그램</span></div>
+      <div class="cc-when"><strong>언제?</strong> 수치 데이터의 분포를 볼 때</div>
+      <div class="cc-data">데이터: 수치형 하나의 분포</div>
+      <div class="cc-ex">시험 점수 분포 · 키 분포 · 나이 분포</div>
+    </div>
+  </div>
+
+  <div class="section-title"><div class="section-title-icon">🗺️</div>차트 선택 의사결정 가이드</div>
+  <p style="font-size:14px;color:var(--text-secondary);margin-bottom:14px;">아래 질문을 순서대로 따라가면 적절한 차트를 찾을 수 있습니다.</p>
+  <div class="dg-flow">
+    <div class="dg-row">
+      <div class="dg-qnum">Q1</div>
+      <div class="dg-body">
+        <div class="dg-question">비교하려는 것이 "시간에 따른 변화"인가요?</div>
+        <div class="dg-answers">
+          <span class="dg-yes">YES → 꺾은선 차트</span>
+          <span class="dg-no">NO → 다음 질문으로</span>
+        </div>
+      </div>
+    </div>
+    <div class="dg-row">
+      <div class="dg-qnum">Q2</div>
+      <div class="dg-body">
+        <div class="dg-question">전체에서 각 부분의 "비율"을 보고 싶은 건가요?</div>
+        <div class="dg-answers">
+          <span class="dg-yes">YES → 원형 차트 (항목 5개 이하일 때)</span>
+          <span class="dg-no">NO → 다음 질문으로</span>
+        </div>
+      </div>
+    </div>
+    <div class="dg-row">
+      <div class="dg-qnum">Q3</div>
+      <div class="dg-body">
+        <div class="dg-question">두 수치형 변수 사이의 "관계"를 보고 싶은 건가요?</div>
+        <div class="dg-answers">
+          <span class="dg-yes">YES → 산점도</span>
+          <span class="dg-no">NO → 다음 질문으로</span>
+        </div>
+      </div>
+    </div>
+    <div class="dg-row">
+      <div class="dg-qnum">Q4</div>
+      <div class="dg-body">
+        <div class="dg-question">하나의 수치형 변수의 "분포"를 보고 싶은 건가요?</div>
+        <div class="dg-answers">
+          <span class="dg-yes">YES → 히스토그램</span>
+          <span class="dg-no">NO → 다음 질문으로</span>
+        </div>
+      </div>
+    </div>
+    <div class="dg-row">
+      <div class="dg-qnum">Q5</div>
+      <div class="dg-body">
+        <div class="dg-question">범주별 값의 "크기"를 비교하고 싶은 건가요?</div>
+        <div class="dg-answers">
+          <span class="dg-yes">YES → 막대 차트</span>
+          <span class="dg-no">NO → 상황에 맞는 차트를 다시 생각해보세요</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 실습 1 -->
+  <div class="practice-box">
+    <div class="practice-header" onclick="togglePractice(this)">
+      <div class="practice-header-left"><span class="practice-badge">실습 1</span><span class="practice-title-text">직접 차트를 골라보세요</span></div>
+      <span class="practice-toggle">▲ 접기</span>
+    </div>
+    <div class="practice-body">
+      <p style="font-size:13.5px;color:var(--text-secondary);margin-bottom:16px;">시나리오가 주어지면, 가장 적합한 차트 유형을 선택하세요. <strong>선택한 차트를 미리 볼 수 있습니다!</strong></p>
+      <div id="scenario-wrap"></div>
+    </div>
+  </div>
+
+  <!-- 실습 2 -->
+  <div class="section-title"><div class="section-title-icon">🔗</div>데이터 유형과 차트 매칭</div>
+  <p style="font-size:14px;color:var(--text-secondary);margin-bottom:14px;">데이터의 유형을 보고 어떤 차트가 적합한지 판단하는 연습을 해봅시다.</p>
+  <div class="practice-box">
+    <div class="practice-header" onclick="togglePractice(this)">
+      <div class="practice-header-left"><span class="practice-badge">실습 2</span><span class="practice-title-text">데이터를 알맞은 차트에 분류하기</span></div>
+      <span class="practice-toggle">▲ 접기</span>
+    </div>
+    <div class="practice-body">
+      <p style="font-size:13.5px;color:var(--text-secondary);margin-bottom:16px;">아래 데이터 상황을 <strong>드래그하여 적합한 차트 유형에 놓으세요.</strong> 모두 배치한 후 정답 확인 버튼을 누르세요.</p>
+      <!-- 카드 풀 (가로 flex wrap) -->
+      <div id="dnd-source" class="dnd-pool"></div>
+      <!-- 4칸 드롭존 그리드 -->
+      <div class="dnd-zone-grid" id="dnd-zones"></div>
+      <!-- 정답 보기 -->
+      <details class="dnd-answer-box" id="dnd-answer-details">
+        <summary class="dnd-answer-summary">💡 정답 <span class="dnd-answer-toggle">숨기기</span></summary>
+        <div class="dnd-answer-body">
+          <div class="dnd-answer-row"><strong>급식 만족도 변화(2020~2025)</strong> → 꺾은선: 시간에 따른 추세</div>
+          <div class="dnd-answer-row"><strong>혈액형 비율</strong> → 원형: 전체 대비 비율 (항목 4개)</div>
+          <div class="dnd-answer-row"><strong>키와 달리기 기록</strong> → 산점도: 두 수치형 변수의 관계</div>
+          <div class="dnd-answer-row"><strong>반별 봉사활동 시간</strong> → 막대: 범주별 크기 비교</div>
+          <div class="dnd-answer-row"><strong>수학 점수 분포</strong> → 막대(히스토그램): 수치 분포 표현</div>
+          <div class="dnd-answer-row"><strong>동아리별 가입자 수</strong> → 막대: 범주별 크기 비교</div>
+        </div>
+      </details>
+      <button class="dnd-check-btn" id="dnd-chk" onclick="checkDnD()">✅ 정답 확인하기</button>
+      <div class="dnd-result" id="dnd-result"></div>
+    </div>
+  </div>
+
+  <!-- 실습 3 -->
+  <div class="section-title"><div class="section-title-icon">🔎</div>잘못된 차트 선택 찾기</div>
+  <p style="font-size:14px;color:var(--text-secondary);margin-bottom:14px;">실제로 많은 뉴스나 보고서에서 부적절한 차트가 사용됩니다. 잘못된 차트 선택을 비판적으로 판단하는 연습을 해봅시다.</p>
+  <div class="practice-box">
+    <div class="practice-header" onclick="togglePractice(this)">
+      <div class="practice-header-left"><span class="practice-badge">실습 3</span><span class="practice-title-text">이 차트 선택, 괜찮을까?</span></div>
+      <span class="practice-toggle">▲ 접기</span>
+    </div>
+    <div class="practice-body">
+      <p style="font-size:13.5px;color:var(--text-secondary);margin-bottom:16px;">각 상황에서 사용된 차트가 적절한지 판단해보세요.</p>
+      <div class="quiz-block">
+        <div class="quiz-sit"><strong>상황:</strong> "10년간 서울 인구 변화를 원형 차트로 표현했다."</div>
+        <div class="quiz-q">이 차트 선택에 문제가 있을까요?</div>
+        <div class="quiz-opts">
+          <button class="quiz-btn" onclick="quizAns(this,false,'qf1')">문제 없다</button>
+          <button class="quiz-btn" onclick="quizAns(this,true,'qf1')">문제 있다</button>
+        </div>
+        <div class="quiz-fb" id="qf1">✅ 시간에 따른 변화는 <strong>꺾은선 차트</strong>가 적합합니다. 원형 차트는 한 시점의 비율을 보여줄 때 사용하므로 10년간의 추세를 보기 어렵습니다.</div>
+      </div>
+      <div class="quiz-block">
+        <div class="quiz-sit"><strong>상황:</strong> "반별 학생 수를 막대 차트로 표현했다."</div>
+        <div class="quiz-q">이 차트 선택에 문제가 있을까요?</div>
+        <div class="quiz-opts">
+          <button class="quiz-btn" onclick="quizAns(this,true,'qf2')">문제 없다</button>
+          <button class="quiz-btn" onclick="quizAns(this,false,'qf2')">문제 있다</button>
+        </div>
+        <div class="quiz-fb" id="qf2">✅ 범주(반)별 수치(학생 수)를 비교하는 것이므로 <strong>막대 차트가 적합</strong>합니다!</div>
+      </div>
+      <div class="quiz-block">
+        <div class="quiz-sit"><strong>상황:</strong> "학생 5명의 키와 몸무게 관계를 원형 차트로 표현했다."</div>
+        <div class="quiz-q">이 차트 선택에 문제가 있을까요?</div>
+        <div class="quiz-opts">
+          <button class="quiz-btn" onclick="quizAns(this,false,'qf3')">문제 없다</button>
+          <button class="quiz-btn" onclick="quizAns(this,true,'qf3')">문제 있다</button>
+        </div>
+        <div class="quiz-fb" id="qf3">✅ 두 수치형 변수(키, 몸무게)의 관계를 보려면 <strong>산점도</strong>가 적합합니다.</div>
+      </div>
+      <div class="quiz-block">
+        <div class="quiz-sit"><strong>상황:</strong> "전교생의 좋아하는 계절 비율을 원형 차트로 표현했다."</div>
+        <div class="quiz-q">이 차트 선택에 문제가 있을까요?</div>
+        <div class="quiz-opts">
+          <button class="quiz-btn" onclick="quizAns(this,true,'qf4')">문제 없다</button>
+          <button class="quiz-btn" onclick="quizAns(this,false,'qf4')">문제 있다</button>
+        </div>
+        <div class="quiz-fb" id="qf4">✅ 범주(계절)가 4개이고, 전체 대비 비율을 보여주는 것이므로 <strong>원형 차트가 적합</strong>합니다!</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tip-box">
+    <span class="tip-label">TIP</span>
+    <div>차트 선택에서 가장 흔한 실수 세 가지:<br>1. 시간 변화 데이터를 원형 차트로 그리기 (꺾은선이 적합)<br>2. 너무 많은 항목(10개 이상)을 원형 차트에 넣기<br>3. 두 변수의 관계를 막대 차트로 그리기 (산점도가 적합)</div>
+  </div>
+
+  <div class="summary-box">
+    <div class="summary-title">이번 레슨에서 배운 것</div>
+    <ul class="summary-list">
+      <li>5가지 주요 차트 유형과 각각의 용도</li>
+      <li>차트 선택 <strong>의사결정 가이드</strong> (질문 흐름도)</li>
+      <li>데이터 특성(시간 변화, 비율, 관계, 비교)에 맞는 <strong>차트 매칭</strong></li>
+      <li>잘못된 차트 선택을 <strong>비판적으로 판단</strong>하는 능력</li>
+    </ul>
+  </div>
+
+  <div class="nav-buttons">
+    <button class="btn btn-secondary" onclick="location.href='chart-reading-4-1.html'">← 이전 레슨</button>
+    <button class="btn btn-primary" disabled style="opacity:0.35;cursor:not-allowed;">다음 레슨 →</button>
+  </div>
+</div>
+</main>
+
+<script>
+/* ===== CHART DRAWING ===== */
+function getW(canvas){
+  let el=canvas.parentElement;
+  while(el&&el.clientWidth<80) el=el.parentElement;
+  return Math.max((el?el.clientWidth:700)-32,250);
+}
+
+function drawBar(canvas,vals,labels,colors){
+  const dpr=devicePixelRatio||1,W=getW(canvas),H=215;
+  canvas.width=W*dpr;canvas.height=H*dpr;
+  canvas.style.width=W+"px";canvas.style.height=H+"px";
+  const ctx=canvas.getContext("2d");ctx.scale(dpr,dpr);
+  const PAD={top:22,right:14,bottom:38,left:46};
+  const cW=W-PAD.left-PAD.right,cH=H-PAD.top-PAD.bottom;
+  const minV=Math.min(0,...vals),maxV=Math.max(...vals);
+  const range=maxV-minV||1,yPad=range*0.18;
+  const yMin=minV-yPad,yMax=maxV+yPad,yRange=yMax-yMin;
+  const toY=v=>PAD.top+(1-(v-yMin)/yRange)*cH;
+  const step=range<=10?5:range<=30?10:20;
+  for(let v=Math.ceil(yMin/step)*step;v<=yMax+0.01;v+=step){
+    const y=toY(v);
+    ctx.strokeStyle="#E4E9F2";ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(PAD.left,y);ctx.lineTo(PAD.left+cW,y);ctx.stroke();
+    ctx.fillStyle="#9AA5B4";ctx.font="11px Noto Sans KR";ctx.textAlign="right";
+    ctx.fillText(v,PAD.left-5,y+4);
+  }
+  const gap=cW/vals.length,bW=gap*0.54,zeroY=toY(0);
+  vals.forEach((v,i)=>{
+    const x=PAD.left+gap*i+(gap-bW)/2;
+    const topY=Math.min(toY(v),zeroY),bH=Math.abs(toY(v)-zeroY);
+    ctx.fillStyle=colors[i%colors.length];
+    ctx.beginPath();ctx.roundRect(x,topY,bW,Math.max(bH,2),[4,4,0,0]);ctx.fill();
+    ctx.fillStyle="#1A1F36";ctx.font="11px Noto Sans KR";ctx.textAlign="center";
+    ctx.fillText(labels[i],x+bW/2,H-12);
+  });
+  if(minV<0){ctx.strokeStyle="#555";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(PAD.left,zeroY);ctx.lineTo(PAD.left+cW,zeroY);ctx.stroke();}
+  ctx.strokeStyle="#CBD5E0";ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(PAD.left,PAD.top);ctx.lineTo(PAD.left,PAD.top+cH);ctx.lineTo(PAD.left+cW,PAD.top+cH);ctx.stroke();
+}
+
+function drawLine(canvas,vals,labels){
+  const dpr=devicePixelRatio||1,W=getW(canvas),H=215;
+  canvas.width=W*dpr;canvas.height=H*dpr;
+  canvas.style.width=W+"px";canvas.style.height=H+"px";
+  const ctx=canvas.getContext("2d");ctx.scale(dpr,dpr);
+  const PAD={top:20,right:14,bottom:38,left:46};
+  const cW=W-PAD.left-PAD.right,cH=H-PAD.top-PAD.bottom;
+  const n=vals.length;
+  const minV=Math.min(...vals),maxV=Math.max(...vals);
+  const range=maxV-minV||1,yPad=range*0.2;
+  const yMin=minV-yPad,yMax=maxV+yPad,yRange=yMax-yMin;
+  const toC=(i,v)=>[PAD.left+(i/(n-1))*cW,PAD.top+(1-(v-yMin)/yRange)*cH];
+  const step=range<=10?5:range<=30?10:20;
+  for(let v=Math.ceil(yMin/step)*step;v<=yMax+0.01;v+=step){
+    const y=PAD.top+(1-(v-yMin)/yRange)*cH;
+    ctx.strokeStyle="#E4E9F2";ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(PAD.left,y);ctx.lineTo(PAD.left+cW,y);ctx.stroke();
+    ctx.fillStyle="#9AA5B4";ctx.font="11px Noto Sans KR";ctx.textAlign="right";
+    ctx.fillText(v,PAD.left-5,y+4);
+  }
+  if(minV<0){const zy=PAD.top+(1-(0-yMin)/yRange)*cH;ctx.strokeStyle="#888";ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(PAD.left,zy);ctx.lineTo(PAD.left+cW,zy);ctx.stroke();}
+  const zeroY2=PAD.top+(1-(Math.max(0,yMin)-yMin)/yRange)*cH;
+  ctx.beginPath();vals.forEach((v,i)=>{const[x,y]=toC(i,v);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});
+  ctx.lineTo(toC(n-1,vals[n-1])[0],zeroY2);ctx.lineTo(PAD.left,zeroY2);ctx.closePath();
+  const g=ctx.createLinearGradient(0,PAD.top,0,PAD.top+cH);
+  g.addColorStop(0,"rgba(231,76,60,0.16)");g.addColorStop(1,"rgba(231,76,60,0.01)");
+  ctx.fillStyle=g;ctx.fill();
+  ctx.beginPath();vals.forEach((v,i)=>{const[x,y]=toC(i,v);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});
+  ctx.strokeStyle="#E74C3C";ctx.lineWidth=2.5;ctx.lineJoin="round";ctx.stroke();
+  vals.forEach((v,i)=>{
+    const[x,y]=toC(i,v);
+    ctx.beginPath();ctx.arc(x,y,4.5,0,Math.PI*2);
+    ctx.fillStyle="#E74C3C";ctx.fill();ctx.strokeStyle="white";ctx.lineWidth=1.5;ctx.stroke();
+    ctx.fillStyle="#1A1F36";ctx.font="11px Noto Sans KR";ctx.textAlign="center";ctx.fillText(labels[i],x,H-12);
+  });
+  ctx.strokeStyle="#CBD5E0";ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(PAD.left,PAD.top);ctx.lineTo(PAD.left,PAD.top+cH);ctx.lineTo(PAD.left+cW,PAD.top+cH);ctx.stroke();
+}
+
+function drawScatter(canvas,pts){
+  const dpr=devicePixelRatio||1,W=getW(canvas),H=225;
+  canvas.width=W*dpr;canvas.height=H*dpr;
+  canvas.style.width=W+"px";canvas.style.height=H+"px";
+  const ctx=canvas.getContext("2d");ctx.scale(dpr,dpr);
+  const PAD={top:16,right:16,bottom:40,left:50};
+  const cW=W-PAD.left-PAD.right,cH=H-PAD.top-PAD.bottom;
+  const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);
+  const xR=Math.max(...xs)-Math.min(...xs)||1,yR=Math.max(...ys)-Math.min(...ys)||1;
+  const xMin=Math.min(...xs)-xR*0.08,xMax=Math.max(...xs)+xR*0.08;
+  const yMin=Math.min(...ys)-yR*0.1,yMax=Math.max(...ys)+yR*0.1;
+  const toC=(x,y)=>[PAD.left+(x-xMin)/(xMax-xMin)*cW,PAD.top+(1-(y-yMin)/(yMax-yMin))*cH];
+  const xStep=5,yStep=5;
+  for(let v=Math.ceil(xMin/xStep)*xStep;v<=xMax+0.01;v+=xStep){
+    const[cx]=toC(v,0);ctx.strokeStyle="#E4E9F2";ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(cx,PAD.top);ctx.lineTo(cx,PAD.top+cH);ctx.stroke();
+    ctx.fillStyle="#9AA5B4";ctx.font="11px Noto Sans KR";ctx.textAlign="center";ctx.fillText(v,cx,H-12);
+  }
+  for(let v=Math.ceil(yMin/yStep)*yStep;v<=yMax+0.01;v+=yStep){
+    const[,cy]=toC(0,v);ctx.strokeStyle="#E4E9F2";ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(PAD.left,cy);ctx.lineTo(PAD.left+cW,cy);ctx.stroke();
+    ctx.fillStyle="#9AA5B4";ctx.font="11px Noto Sans KR";ctx.textAlign="right";ctx.fillText(v,PAD.left-5,cy+4);
+  }
+  const n=pts.length,mx=xs.reduce((a,b)=>a+b)/n,my=ys.reduce((a,b)=>a+b)/n;
+  const b=pts.reduce((s,p)=>s+(p[0]-mx)*(p[1]-my),0)/pts.reduce((s,p)=>s+(p[0]-mx)**2,1);
+  const a=my-b*mx;
+  const[tx1,ty1]=toC(xMin+0.5,a+b*(xMin+0.5)),[tx2,ty2]=toC(xMax-0.5,a+b*(xMax-0.5));
+  ctx.strokeStyle="rgba(59,111,232,0.28)";ctx.lineWidth=1.8;ctx.setLineDash([5,4]);
+  ctx.beginPath();ctx.moveTo(tx1,ty1);ctx.lineTo(tx2,ty2);ctx.stroke();ctx.setLineDash([]);
+  pts.forEach(([x,y])=>{
+    const[cx,cy]=toC(x,y);ctx.beginPath();ctx.arc(cx,cy,5.5,0,Math.PI*2);
+    ctx.fillStyle="rgba(59,111,232,0.72)";ctx.fill();
+  });
+  ctx.strokeStyle="#CBD5E0";ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(PAD.left,PAD.top);ctx.lineTo(PAD.left,PAD.top+cH);ctx.lineTo(PAD.left+cW,PAD.top+cH);ctx.stroke();
+}
+
+function drawPie(canvas){
+  const dpr=devicePixelRatio||1,W=getW(canvas),H=210;
+  canvas.width=W*dpr;canvas.height=H*dpr;
+  canvas.style.width=W+"px";canvas.style.height=H+"px";
+  const ctx=canvas.getContext("2d");ctx.scale(dpr,dpr);
+  const sl=[{v:31,c:"#2ECC71",l:"버스"},{v:22.5,c:"#5B8BF5",l:"도보"},{v:19,c:"#F97316",l:"지하철"},{v:17.5,c:"#E74C3C",l:"자가용"},{v:10,c:"#8B5CF6",l:"자전거"}];
+  const cx=W*0.4,cy=H/2,r=Math.min(cy,cx)*0.78;
+  let ang=-Math.PI/2;
+  const tot=sl.reduce((s,d)=>s+d.v,0);
+  sl.forEach(d=>{
+    const sw=(d.v/tot)*2*Math.PI;
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,ang,ang+sw);ctx.closePath();
+    ctx.fillStyle=d.c;ctx.fill();ctx.strokeStyle="white";ctx.lineWidth=2;ctx.stroke();
+    const mid=ang+sw/2;
+    if(d.v>10){ctx.fillStyle="white";ctx.font="bold 12px Noto Sans KR";ctx.textAlign="center";ctx.fillText(d.v+"%",cx+Math.cos(mid)*r*0.64,cy+Math.sin(mid)*r*0.64+4);}
+    ang+=sw;
+  });
+  const lx=cx+r+14;
+  sl.forEach((d,i)=>{
+    const ly=cy-sl.length*11+i*24;
+    ctx.fillStyle=d.c;ctx.fillRect(lx,ly-9,11,11);
+    ctx.fillStyle="#4A5568";ctx.font="12px Noto Sans KR";ctx.textAlign="left";ctx.fillText(d.l,lx+15,ly);
+  });
+}
+
+function drawHistogram(canvas){
+  const dpr=devicePixelRatio||1,W=getW(canvas),H=210;
+  canvas.width=W*dpr;canvas.height=H*dpr;
+  canvas.style.width=W+"px";canvas.style.height=H+"px";
+  const ctx=canvas.getContext("2d");ctx.scale(dpr,dpr);
+  const bins=[{r:"50-60",v:3},{r:"60-70",v:7},{r:"70-80",v:15},{r:"80-90",v:11},{r:"90-100",v:4}];
+  const PAD={top:16,right:12,bottom:38,left:44};
+  const cW=W-PAD.left-PAD.right,cH=H-PAD.top-PAD.bottom;
+  const max=Math.max(...bins.map(b=>b.v))*1.2,bW=cW/bins.length;
+  [0,5,10,15,20].forEach(v=>{
+    const y=PAD.top+cH-(v/max)*cH;
+    ctx.strokeStyle="#E4E9F2";ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(PAD.left,y);ctx.lineTo(PAD.left+cW,y);ctx.stroke();
+    ctx.fillStyle="#9AA5B4";ctx.font="11px Noto Sans KR";ctx.textAlign="right";ctx.fillText(v,PAD.left-5,y+4);
+  });
+  bins.forEach((b,i)=>{
+    const bH=(b.v/max)*cH,x=PAD.left+bW*i,y=PAD.top+cH-bH;
+    ctx.fillStyle="rgba(139,92,246,0.72)";ctx.fillRect(x+1,y,bW-2,bH);
+    ctx.strokeStyle="white";ctx.lineWidth=1.5;ctx.strokeRect(x+1,y,bW-2,bH);
+    ctx.fillStyle="#1A1F36";ctx.font="11px Noto Sans KR";ctx.textAlign="center";ctx.fillText(b.r,x+bW/2,H-12);
+  });
+  ctx.strokeStyle="#CBD5E0";ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(PAD.left,PAD.top);ctx.lineTo(PAD.left,PAD.top+cH);ctx.lineTo(PAD.left+cW,PAD.top+cH);ctx.stroke();
+}
+
+/* ===== SCENARIO DATA ===== */
+const C1=["#5B8BF5","#2ECC71","#F97316"];
+const C2=["#5B8BF5","#2ECC71","#F97316","#8B5CF6"];
+const C8=["#5B8BF5","#2ECC71","#F97316","#E74C3C","#8B5CF6","#F1C40F","#1ABC9C","#E91E63"];
+const SCEN=[
+  {num:1,total:3,title:"학년별 평균 성적 비교",type:"범주형(학년) × 수치형(성적)",correct:"막대 차트",
+   feedback:"범주별 수치를 비교할 때는 막대 차트가 가장 적합합니다.",
+   btns:["막대 차트","원형 차트","산점도","꺾은선 차트"],
+   draw:{"막대 차트":c=>drawBar(c,[75,82,78],["1학년","2학년","3학년"],C1),"꺾은선 차트":c=>drawLine(c,[75,82,78],["1학년","2학년","3학년"]),"산점도":c=>drawScatter(c,[[1,75],[2,82],[3,78]]),"원형 차트":c=>drawPie(c)}},
+  {num:2,total:3,title:"월별 기온 변화 추이",type:"시간(월) × 수치형(기온)",correct:"꺾은선 차트",
+   feedback:"시간에 따른 변화 추이를 보려면 꺾은선 차트가 적합합니다.",
+   btns:["막대 차트","꺾은선 차트","산점도","원형 차트"],
+   draw:{"막대 차트":c=>drawBar(c,[-2,13,26,15],["1월","4월","7월","10월"],C2),"꺾은선 차트":c=>drawLine(c,[-2,13,26,15],["1월","4월","7월","10월"]),"산점도":c=>drawScatter(c,[[1,-2],[4,13],[7,26],[10,15]]),"원형 차트":c=>drawPie(c)}},
+  {num:3,total:3,title:"키와 몸무게의 관계",type:"수치형(키) × 수치형(몸무게)",correct:"산점도",
+   feedback:"두 수치형 변수의 관계를 보려면 산점도가 적합합니다.",
+   btns:["산점도","막대 차트","꺾은선 차트","히스토그램"],
+   draw:{"산점도":c=>drawScatter(c,[[160,55],[163,57],[165,60],[168,62],[170,65],[172,68],[175,72],[180,78]]),"막대 차트":c=>drawBar(c,[55,57,60,62,65,68,72,78],["160","163","165","168","170","172","175","180"],C8),"꺾은선 차트":c=>drawLine(c,[55,57,60,62,65,68,72,78],["160","163","165","168","170","172","175","180"]),"히스토그램":c=>drawHistogram(c)}},
+];
+
+let curIdx=0;
+let verdictDone=[false,false,false];
+let selByIdx={};
+
+function renderScenario(idx){
+  const s=SCEN[idx];
+  const dots=SCEN.map((_,i)=>`<div class="dot ${i===idx?"dot-active":verdictDone[i]?"dot-done":""}"></div>`).join("");
+  document.getElementById("scenario-wrap").innerHTML=`
+    <div class="scenario-card">
+      <div class="scenario-tag">시나리오 ${s.num}/${s.total}</div>
+      <div class="scenario-title">${s.title}</div>
+      <div class="scenario-type">데이터 유형: ${s.type}</div>
+    </div>
+    <div class="chart-sel-btns" id="sbtns-${idx}">
+      ${s.btns.map(b=>`<button class="chart-sel-btn" onclick="selChart(${idx},'${b}')">${b}</button>`).join("")}
+    </div>
+    <div class="chart-preview-wrap" id="prev-${idx}">
+      <div class="preview-placeholder">위에서 차트 유형을 선택하면<br>미리보기가 나타납니다</div>
+    </div>
+    <div class="verdict-section">
+      <div class="verdict-label">이 차트가 적합한가요?</div>
+      <div class="verdict-btns" id="vbtns-${idx}">
+        ${s.btns.map(b=>`<button class="verdict-btn" onclick="doVerdict(${idx},'${b}')">${b}</button>`).join("")}
+      </div>
+      <div class="verdict-feedback" id="vfb-${idx}"></div>
+    </div>
+    <div class="scenario-nav">
+      <button class="scen-btn prev-btn" onclick="gotoScen(${idx-1})" ${idx===0?"disabled":""}>← 이전</button>
+      <div class="dots">${dots}</div>
+      <button class="scen-btn next-btn" onclick="gotoScen(${idx+1})" ${idx===SCEN.length-1?"disabled":""}>다음 시나리오 →</button>
+    </div>`;
+  selChart(idx, s.btns[0], true);
+}
+
+function gotoScen(idx){if(idx>=0&&idx<SCEN.length){curIdx=idx;renderScenario(idx);}}
+
+function selChart(idx,name,auto){
+  const s=SCEN[idx];
+  if(verdictDone[idx]&&!auto) return;
+  selByIdx[idx]=name;
+  if(!verdictDone[idx]){
+    document.querySelectorAll(`#sbtns-${idx} .chart-sel-btn`).forEach(b=>{b.classList.toggle("sel-active",b.textContent===name);});
+  }
+  const wrap=document.getElementById("prev-"+idx);
+  wrap.innerHTML="<canvas id=\"pcanvas\"></canvas>";
+  const c=document.getElementById("pcanvas");
+  setTimeout(()=>{if(s.draw[name])s.draw[name](c);},16);
+}
+
+function doVerdict(idx,chosen){
+  if(verdictDone[idx]) return;
+  verdictDone[idx]=true;
+  const s=SCEN[idx];
+  selChart(idx,chosen,true);
+  const ok=chosen===s.correct;
+  document.querySelectorAll(`#vbtns-${idx} .verdict-btn`).forEach(b=>{
+    b.disabled=true;
+    if(b.textContent===chosen) b.classList.add(ok?"v-correct":"v-wrong");
+    if(!ok&&b.textContent===s.correct) b.classList.add("v-reveal");
+  });
+  document.querySelectorAll(`#sbtns-${idx} .chart-sel-btn`).forEach(b=>{
+    b.classList.remove("sel-active");b.disabled=true;
+    if(b.textContent===chosen) b.classList.add(ok?"sel-correct":"sel-wrong");
+    if(!ok&&b.textContent===s.correct) b.classList.add("sel-reveal");
+  });
+  const fb=document.getElementById("vfb-"+idx);
+  fb.style.display="block";
+  fb.className="verdict-feedback "+(ok?"vf-ok":"vf-ng");
+  fb.innerHTML=ok?`✅ 정답! <strong>${s.correct}</strong>가 가장 적합합니다. ${s.feedback}`
+    :`❌ 아쉽네요! 가장 적합한 차트는 <strong>${s.correct}</strong>입니다.<br><span style="font-size:13px">${s.feedback}</span>`;
+  document.querySelectorAll(".dot").forEach((d,i)=>{d.className=`dot ${i===idx?"dot-active":verdictDone[i]?"dot-done":""}`;});
+}
+
+/* ===== DND ===== */
+const DND=[
+  {id:"a",text:"급식 만족도 변화(2020~2025)",correct:"꺾은선 차트"},
+  {id:"b",text:"혈액형 비율",correct:"원형 차트"},
+  {id:"c",text:"키와 달리기 기록",correct:"산점도"},
+  {id:"d",text:"반별 봉사활동 시간",correct:"막대 차트"},
+  {id:"e",text:"수학 점수 분포",correct:"막대 차트"},
+  {id:"f",text:"동아리별 가입자 수",correct:"막대 차트"},
+];
+const ZONES=["막대 차트","꺾은선 차트","원형 차트","산점도"];
+const ZICONS={"막대 차트":"📊","꺾은선 차트":"📈","원형 차트":"🥧","산점도":"🔵"};
+let zC={"막대 차트":[],"꺾은선 차트":[],"원형 차트":[],"산점도":[]};
+let dragId=null,tapId=null;
+
+function buildDnD(){
+  // Source pool — horizontal wrap
+  document.getElementById("dnd-source").innerHTML=DND.map(item=>`
+    <div class="dnd-card" id="dc-${item.id}" draggable="true"
+      ondragstart="dndStart(event,'${item.id}')" ondragend="dndEnd()"
+      onclick="tapItem('${item.id}')">
+      ${item.text}
+    </div>`).join("");
+  // Zone grid — 4 columns
+  const ZCOLORS={"막대 차트":"#EEF3FF","꺾은선 차트":"#FDF2F2","원형 차트":"#FFFBEB","산점도":"#F0FDF4"};
+  const ZBORDERS={"막대 차트":"#C5D5FF","꺾은선 차트":"#FAC5C0","원형 차트":"#F9E04B","산점도":"#A8E6C5"};
+  document.getElementById("dnd-zones").innerHTML=ZONES.map(z=>`
+    <div class="dnd-zone" id="dz-${z.replace(/ /g,"_")}"
+      style="background:${ZCOLORS[z]};border-color:${ZBORDERS[z]};"
+      ondragover="dndOver(event)" ondragleave="dndLeave(event)"
+      ondrop="dndDrop(event,'${z}')" onclick="tapZone('${z}')">
+      <div class="dnd-zone-head" style="color:#444;">${ZICONS[z]} ${z}</div>
+      <div class="dnd-zone-body" id="dzb-${z.replace(/ /g,"_")}"></div>
+    </div>`).join("");
+}
+
+function dndStart(e,id){dragId=id;e.dataTransfer.setData("text/plain",id);setTimeout(()=>document.getElementById("dc-"+id)?.classList.add("is-dragging"),0);}
+function dndEnd(){if(dragId)document.getElementById("dc-"+dragId)?.classList.remove("is-dragging");}
+function dndOver(e){e.preventDefault();e.currentTarget.classList.add("dz-over");}
+function dndLeave(e){e.currentTarget.classList.remove("dz-over");}
+function dndDrop(e,zone){e.preventDefault();e.currentTarget.classList.remove("dz-over");const id=e.dataTransfer.getData("text/plain")||dragId;if(id)placeItem(id,zone);dragId=null;}
+function tapItem(id){if(tapId===id){tapId=null;refreshTap();return;}tapId=id;refreshTap();}
+function tapZone(zone){if(!tapId)return;placeItem(tapId,zone);tapId=null;refreshTap();}
+function refreshTap(){DND.forEach(item=>{const el=document.getElementById("dc-"+item.id);if(el)el.classList.toggle("tap-sel",item.id===tapId);});}
+function placeItem(id,zone){
+  ZONES.forEach(z=>{zC[z]=zC[z].filter(x=>x!==id);});
+  zC[zone].push(id);renderZones();
+  const el=document.getElementById("dc-"+id);if(el)el.classList.add("is-placed");
+}
+function removeChip(id,zone){zC[zone]=zC[zone].filter(x=>x!==id);renderZones();const el=document.getElementById("dc-"+id);if(el){el.classList.remove("is-placed");el.style.opacity="";}}
+function renderZones(){
+  ZONES.forEach(z=>{
+    const wrap=document.getElementById("dzb-"+z.replace(/ /g,"_"));if(!wrap)return;
+    wrap.innerHTML=zC[z].map(id=>{const item=DND.find(x=>x.id===id);return`<div class="dnd-chip" onclick="removeChip('${id}','${z}')">${item.text} <span style="color:var(--red);font-size:11px">✕</span></div>`;}).join("");
+  });
+}
+function checkDnD(){
+  const placed=ZONES.reduce((s,z)=>s+zC[z].length,0);
+  if(placed<DND.length){alert("모든 항목을 배치해주세요!");return;}
+  let correct=0;const rows=[];
+  DND.forEach(item=>{
+    const loc=ZONES.find(z=>zC[z].includes(item.id));
+    const ok=loc===item.correct;if(ok)correct++;
+    rows.push(`<div class="dnd-result-row"><span>${ok?"✅":"❌"}</span><span><strong>${item.text}</strong> → ${loc} ${ok?"":"<span style=\"color:var(--text-muted);font-size:12px\">(정답: "+item.correct+")</span>"}</span></div>`);
+  });
+  ZONES.forEach(z=>{
+    const wrap=document.getElementById("dzb-"+z.replace(/ /g,"_"));if(!wrap)return;
+    wrap.querySelectorAll(".dnd-chip").forEach(chip=>{
+      chip.onclick=null;
+      const item=DND.find(i=>chip.textContent.includes(i.text));
+      if(item)chip.classList.add(item.correct===z?"chip-ok":"chip-ng");
+    });
+  });
+  const res=document.getElementById("dnd-result");
+  res.classList.add("show");
+  const allOk=correct===DND.length;
+  res.style.cssText=`background:${allOk?"var(--green-light)":"var(--yellow-light)"};border:1px solid ${allOk?"var(--green)":"#E6C619"};border-radius:var(--radius);padding:14px 18px;`;
+  res.innerHTML=`<strong>${correct}/${DND.length}개 정답!${allOk?" 🎉 완벽합니다!":""}</strong>${rows.join("")}`;
+  document.getElementById("dnd-chk").disabled=true;
+}
+
+/* ===== QUIZ 3 ===== */
+function quizAns(btn,isCorrect,fbId){
+  const block=btn.closest(".quiz-block");
+  if(block.dataset.answered)return;
+  block.dataset.answered="1";
+  block.querySelectorAll(".quiz-btn").forEach(b=>{b.disabled=true;});
+  btn.classList.add(isCorrect?"qb-correct":"qb-wrong");
+  document.getElementById(fbId).style.display="block";
+}
+
+/* ===== HELPERS ===== */
+function togglePractice(header){
+  const body=header.nextElementSibling;
+  const tog=header.querySelector(".practice-toggle");
+  const open=body.style.display!=="none";
+  body.style.display=open?"none":"block";
+  tog.textContent=open?"▼ 펼치기":"▲ 접기";
+}
+
+window.addEventListener("load",function(){renderScenario(0);buildDnD();});
+</script>
+</body>
+</html>
