@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4-1 차트 읽기 | 인공지능 기초 with 데이터 분석</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary:#3B6FE8; --primary-light:#EEF3FF; --primary-dark:#2451C7;
+    --accent:#FF6B35; --accent-light:#FFF0EB;
+    --green:#2ECC71; --green-light:#E8F8F0;
+    --red:#E74C3C; --red-light:#FDECEA;
+    --yellow:#F1C40F; --yellow-light:#FEFCE8;
+    --teal:#0EA5A0; --teal-light:#EDFAFA;
+    --purple:#8B5CF6; --purple-light:#F3F0FF;
+    --text-primary:#1A1F36; --text-secondary:#4A5568; --text-muted:#9AA5B4;
+    --bg:#F7F8FC; --card-bg:#FFFFFF; --border:#E4E9F2;
+    --radius:12px;
+    --shadow:0 2px 12px rgba(59,111,232,0.08);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text-primary);min-height:100vh;font-size:15px;line-height:1.7;}
+
+  /* TOPBAR */
+  .topbar{position:sticky;top:0;z-index:200;background:#fff;border-bottom:1px solid var(--border);padding:0 32px;height:52px;display:flex;align-items:center;justify-content:space-between;}
+  .topbar-home{display:flex;align-items:center;gap:10px;text-decoration:none;}
+  .topbar-logo-icon{width:30px;height:30px;background:linear-gradient(135deg,var(--primary),#6B9DFF);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+  .topbar-logo-text{font-size:13px;font-weight:700;color:var(--text-primary);}
+  .topbar-back-btn{background:var(--primary-light);color:var(--primary);border:1px solid #C5D5FF;border-radius:8px;padding:6px 14px;font-size:13px;font-weight:600;text-decoration:none;transition:all .15s;}
+  .topbar-back-btn:hover{background:var(--primary);color:white;}
+
+  .main{width:100%;}
+  .content{max-width:860px;margin:0 auto;padding:40px 40px 80px;}
+
+  .breadcrumb{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);margin-bottom:24px;}
+  .breadcrumb span{color:var(--accent);font-weight:500;}
+
+  /* LESSON HEADER — 4단원: 보라/인디고 테마 */
+  .lesson-header{background:linear-gradient(135deg,#4C1D95 0%,#7C3AED 100%);border-radius:16px;padding:32px 36px;color:white;margin-bottom:32px;position:relative;overflow:hidden;}
+  .lesson-header::before{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,0.06);}
+  .lesson-meta{display:flex;align-items:center;gap:10px;font-size:12px;opacity:.85;margin-bottom:10px;}
+  .lesson-meta-badge{background:rgba(255,255,255,0.2);border-radius:20px;padding:3px 10px;font-weight:500;}
+  .lesson-title{font-size:28px;font-weight:700;margin-bottom:6px;}
+  .lesson-subtitle{font-size:15px;opacity:.85;}
+
+  .intro-text{background:var(--card-bg);border-radius:var(--radius);padding:22px 28px;border:1px solid var(--border);color:var(--text-secondary);font-size:15px;line-height:1.85;margin-bottom:28px;}
+
+  .section-title{font-size:18px;font-weight:700;color:var(--text-primary);margin:32px 0 16px;display:flex;align-items:center;gap:10px;padding-bottom:12px;border-bottom:2px solid #DDD6FE;}
+  .section-title-icon{width:32px;height:32px;background:#EDE9FE;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+
+  /* STEP LIST */
+  .step-list{display:flex;flex-direction:column;gap:0;margin-bottom:24px;}
+  .step-item{display:flex;align-items:flex-start;gap:16px;padding:12px 0;border-bottom:1px dashed var(--border);}
+  .step-item:last-child{border-bottom:none;}
+  .step-num{width:28px;height:28px;border-radius:50%;background:var(--purple);color:white;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+  .step-title{font-size:13.5px;font-weight:700;color:var(--text-primary);margin-bottom:2px;}
+  .step-desc{font-size:13px;color:var(--text-secondary);}
+
+  /* INFO BOXES */
+  .note-box{background:var(--primary-light);border:1.5px solid #C5D5FF;border-radius:var(--radius);padding:14px 20px;margin:16px 0;display:flex;gap:10px;font-size:13.5px;color:var(--text-secondary);}
+  .note-label{background:var(--primary);color:white;font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;flex-shrink:0;margin-top:3px;}
+  .warn-box{background:var(--red-light);border:1.5px solid #FAD0CC;border-radius:var(--radius);padding:14px 20px;margin:16px 0;display:flex;gap:10px;font-size:13.5px;color:#7A2020;}
+  .warn-label{background:var(--red);color:white;font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;flex-shrink:0;margin-top:3px;}
+  .think-box{background:var(--purple-light);border:1.5px solid #D4C8FF;border-radius:var(--radius);padding:16px 22px;margin:16px 0;}
+  .think-label{font-size:11px;font-weight:700;color:var(--purple);margin-bottom:8px;}
+  .think-list{list-style:none;}
+  .think-list li{font-size:13.5px;color:var(--text-secondary);padding:3px 0;display:flex;gap:8px;}
+  .think-list li::before{content:"•";color:var(--purple);flex-shrink:0;}
+
+  /* PRACTICE BOX */
+  .practice-box{border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:28px;}
+  .practice-header{background:var(--text-primary);color:white;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;}
+  .practice-header-left{display:flex;align-items:center;gap:10px;}
+  .practice-badge{background:var(--purple);color:white;font-size:10px;font-weight:700;padding:2px 8px;border-radius:12px;}
+  .practice-title-text{font-size:15px;font-weight:600;}
+  .practice-toggle{font-size:12px;opacity:.75;}
+  .practice-body{background:var(--card-bg);padding:24px 28px;}
+
+  /* CHART CONTAINERS */
+  .chart-wrap{background:white;border:1px solid var(--border);border-radius:var(--radius);padding:20px 20px 16px;margin-bottom:20px;position:relative;}
+  .chart-title{text-align:center;font-size:14px;font-weight:700;color:var(--text-primary);margin-bottom:14px;}
+  canvas{display:block;width:100%;cursor:crosshair;}
+
+  /* TOOLTIP */
+  .chart-tooltip{
+    position:fixed;background:rgba(26,31,54,0.93);color:white;
+    padding:8px 14px;border-radius:9px;font-size:13px;font-weight:600;
+    pointer-events:none;display:none;z-index:999;white-space:nowrap;
+    line-height:1.55;box-shadow:0 4px 18px rgba(0,0,0,0.22);
+    border:1px solid rgba(255,255,255,0.1);
+  }
+
+  /* QUIZ */
+  .quiz-block{margin-bottom:20px;}
+  .quiz-q{font-size:14.5px;font-weight:600;color:var(--text-primary);margin-bottom:10px;display:flex;gap:8px;align-items:flex-start;}
+  .quiz-q::before{content:'Q';background:var(--purple);color:white;font-size:11px;font-weight:700;padding:2px 7px;border-radius:5px;flex-shrink:0;margin-top:2px;}
+  .quiz-options{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;}
+  .quiz-btn{padding:8px 16px;border-radius:8px;border:1.5px solid var(--border);background:white;font-size:13px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;color:var(--text-secondary);transition:all .15s;}
+  .quiz-btn:hover:not(:disabled){border-color:var(--purple);color:var(--purple);background:var(--purple-light);}
+  .quiz-btn.correct{background:var(--green-light);border-color:var(--green);color:#1A7A44;font-weight:700;}
+  .quiz-btn.wrong{background:var(--red-light);border-color:var(--red);color:var(--red);font-weight:700;}
+  .quiz-btn.reveal-correct{background:var(--green-light);border-color:var(--green);color:#1A7A44;}
+  .quiz-btn:disabled{cursor:default;}
+  .quiz-feedback{display:none;padding:12px 16px;border-radius:8px;font-size:13.5px;line-height:1.65;animation:fadeIn .25s ease;margin-top:4px;}
+  .quiz-feedback.correct{background:var(--green-light);border:1px solid var(--green);color:#1A5A30;}
+  .quiz-feedback.wrong{background:var(--red-light);border:1px solid var(--red);color:#6A1A1A;}
+
+  /* COMPARISON TABLE */
+  .compare-table{width:100%;border-collapse:collapse;background:var(--card-bg);border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);margin-bottom:24px;font-size:13.5px;}
+  .compare-table th{background:var(--text-primary);color:white;padding:10px 16px;text-align:left;font-weight:600;font-size:12px;}
+  .compare-table td{padding:10px 16px;border-bottom:1px solid var(--border);color:var(--text-secondary);}
+  .compare-table tr:last-child td{border-bottom:none;}
+  .compare-table tr:hover td{background:var(--bg);}
+
+  /* CHALLENGE SECTION */
+  .challenge-body{background:var(--card-bg);padding:24px 28px;}
+  .challenge-example{background:#F8F5FF;border-left:3px solid var(--purple);border-radius:0 8px 8px 0;padding:12px 16px;font-size:13.5px;color:var(--text-secondary);margin-bottom:16px;line-height:1.7;}
+  .qa-item{background:var(--bg);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-top:10px;}
+  .qa-q{padding:12px 18px;font-size:14px;font-weight:600;color:var(--text-primary);display:flex;justify-content:space-between;align-items:center;cursor:pointer;}
+  .qa-q:hover{background:var(--purple-light);}
+  .qa-toggle{font-size:13px;color:var(--purple);flex-shrink:0;}
+  .qa-a{padding:12px 18px;background:white;border-top:1px dashed var(--border);font-size:13.5px;color:var(--text-secondary);line-height:1.7;display:none;}
+  .qa-a.show{display:block;animation:fadeIn .25s ease;}
+  .qa-a li{margin-left:18px;margin-top:4px;}
+
+  /* SUMMARY */
+  .summary-box{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:26px 30px;margin-bottom:24px;}
+  .summary-title{font-size:15px;font-weight:700;color:var(--text-primary);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+  .summary-title::before{content:'';width:4px;height:18px;background:var(--purple);border-radius:2px;}
+  .summary-list{list-style:none;}
+  .summary-list li{font-size:14px;color:var(--text-secondary);padding:8px 0;display:flex;align-items:flex-start;gap:10px;border-bottom:1px dashed var(--border);}
+  .summary-list li:last-child{border-bottom:none;}
+  .summary-list li::before{content:'✓';color:var(--green);font-weight:700;flex-shrink:0;margin-top:1px;}
+
+  /* NAV */
+  .nav-buttons{display:flex;justify-content:space-between;align-items:center;margin-top:40px;padding-top:24px;border-top:1px solid var(--border);}
+  .btn{padding:12px 24px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all .15s;display:flex;align-items:center;gap:8px;border:none;}
+  .btn-secondary{background:var(--bg);color:var(--text-secondary);border:1px solid var(--border);}
+  .btn-secondary:hover{background:var(--border);}
+  .btn-primary{background:var(--accent);color:white;}
+  .btn-primary:hover{background:#E85A20;box-shadow:0 4px 14px rgba(255,107,53,0.3);transform:translateY(-1px);}
+  .progress-bar-wrap{flex:1;max-width:200px;margin:0 20px;background:var(--border);border-radius:4px;height:6px;overflow:hidden;}
+  .progress-bar-fill{height:100%;background:var(--purple);border-radius:4px;}
+
+  @keyframes fadeIn{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:translateY(0);}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="topbar-home" href="index.html">
+    <div class="topbar-logo-icon">📊</div>
+    <div class="topbar-logo-text">인공지능 기초 with 데이터 분석</div>
+  </a>
+  <a class="topbar-back-btn" href="index.html">⌂ 메인으로</a>
+</header>
+
+<div class="chart-tooltip" id="tooltip"></div>
+
+<main class="main">
+<div class="content">
+
+  <div class="breadcrumb">홈 › 시각화로 이야기하기 › <span>4-1 차트 읽기</span></div>
+
+  <div class="lesson-header">
+    <div class="lesson-meta">
+      <span class="lesson-meta-badge">📊 4단원 · 4-1</span>
+      <span>⏱ 15분</span>
+    </div>
+    <div class="lesson-title">차트 읽기</div>
+    <div class="lesson-subtitle">차트에서 정보 추출 퀴즈</div>
+  </div>
+
+  <div class="intro-text">
+    데이터를 수집하고 정리한 다음, 가장 효과적으로 전달하는 방법은 무엇일까요? 바로 <strong>차트(그래프)</strong>입니다. 차트는 숫자를 시각적으로 표현하여, 한눈에 패턴과 의미를 파악할 수 있게 해줍니다.<br><br>
+    하지만 차트를 <strong>제대로 읽을 줄 알아야</strong> 합니다. 그림만 보고 넘어가면, 차트가 담고 있는 중요한 정보를 놓치게 됩니다.
+  </div>
+
+  <!-- 핵심 개념 -->
+  <div class="section-title"><div class="section-title-icon">🔍</div>핵심 개념</div>
+  <div style="background:linear-gradient(135deg,var(--purple-light),#F0F9FF);border:1.5px solid #D4C8FF;border-radius:var(--radius);padding:20px 26px;margin-bottom:24px;">
+    <div style="display:inline-flex;align-items:center;gap:6px;background:var(--purple);color:white;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;margin-bottom:12px;">📋 차트 리터러시</div>
+    <div style="font-size:14px;color:var(--text-secondary);line-height:1.75;">
+      <strong>차트 리터러시(Chart Literacy)</strong>란 차트를 정확하게 읽고, 해석하고, 비판적으로 평가하는 능력입니다.<br>
+      이번 레슨에서는 <strong>막대 차트, 꺾은선 차트, 원형 차트</strong>를 읽는 연습을 합니다.
+    </div>
+  </div>
+
+  <!-- 차트 읽기 5단계 -->
+  <div class="section-title"><div class="section-title-icon">📋</div>차트 읽기 5단계</div>
+  <div class="step-list">
+    <div class="step-item"><div class="step-num">1</div><div><div class="step-title">제목 확인</div><div class="step-desc">이 차트가 무엇에 대한 차트인지 파악합니다.</div></div></div>
+    <div class="step-item"><div class="step-num">2</div><div><div class="step-title">축 확인</div><div class="step-desc">X축(가로)과 Y축(세로)이 각각 무엇을 나타내는지 봅니다.</div></div></div>
+    <div class="step-item"><div class="step-num">3</div><div><div class="step-title">단위 확인</div><div class="step-desc">점수? 온도? 명? 단위에 따라 해석이 달라집니다.</div></div></div>
+    <div class="step-item"><div class="step-num">4</div><div><div class="step-title">패턴 파악</div><div class="step-desc">가장 큰 값, 가장 작은 값, 증가/감소 추세 등을 찾습니다.</div></div></div>
+    <div class="step-item"><div class="step-num">5</div><div><div class="step-title">비교하기</div><div class="step-desc">항목들 사이의 차이나 관계를 비교합니다.</div></div></div>
+  </div>
+
+  <!-- ══════════════════════════════════ -->
+  <!-- 1. 막대 차트 -->
+  <!-- ══════════════════════════════════ -->
+  <div class="section-title"><div class="section-title-icon">📊</div>1. 막대 차트 읽기</div>
+  <p style="font-size:14px;color:var(--text-secondary);margin-bottom:14px;">막대 차트는 <strong>범주별 값의 크기를 비교</strong>할 때 사용합니다. 막대의 높이(또는 길이)가 값의 크기를 나타냅니다.</p>
+  <div class="note-box">
+    <span class="note-label">참고</span>
+    <div>막대 차트를 읽을 때는 <strong>각 막대의 높이를 비교</strong>하세요. 어떤 항목이 가장 크고, 가장 작은지 한눈에 알 수 있습니다.</div>
+  </div>
+
+  <div class="practice-box">
+    <div class="practice-header" onclick="togglePractice(this)">
+      <div class="practice-header-left">
+        <span class="practice-badge">실습 1</span>
+        <span class="practice-title-text">과목별 평균 점수 막대 차트 읽기</span>
+      </div>
+      <span class="practice-toggle">▲ 접기</span>
+    </div>
+    <div class="practice-body">
+      <p style="font-size:13.5px;color:var(--text-secondary);margin-bottom:14px;">아래 막대 차트를 관찰하고, 질문에 답해보세요. <strong>막대 위에 마우스를 올리면 정확한 수치가 나타납니다.</strong></p>
+      <div class="chart-wrap">
+        <div class="chart-title">과목별 평균 점수</div>
+        <canvas id="barChart" height="260"></canvas>
+      </div>
+
+      <div class="quiz-block">
+        <div class="quiz-q">가장 평균 점수가 높은 과목은 무엇인가요?</div>
+        <div class="quiz-options">
+          <button class="quiz-btn" onclick="answer(this,'wrong','q1')">국어</button>
+          <button class="quiz-btn" onclick="answer(this,'wrong','q1')">수학</button>
+          <button class="quiz-btn" onclick="answer(this,'wrong','q1')">영어</button>
+          <button class="quiz-btn" onclick="answer(this,'correct','q1')">과학</button>
+          <button class="quiz-btn" onclick="answer(this,'wrong','q1')">사회</button>
+        </div>
+        <div class="quiz-feedback correct" id="q1">✅ 과학이 86점으로 가장 높습니다. 막대의 높이를 비교하면 쉽게 알 수 있죠!</div>
+      </div>
+
+      <div class="quiz-block">
+        <div class="quiz-q">수학과 영어의 점수 차이는 몇 점인가요?</div>
+        <div class="quiz-options">
+          <button class="quiz-btn" onclick="answer(this,'wrong','q2')">10점</button>
+          <button class="quiz-btn" onclick="answer(this,'correct','q2')">13점</button>
+          <button class="quiz-btn" onclick="answer(this,'wrong','q2')">15점</button>
+          <button class="quiz-btn" onclick="answer(this,'wrong','q2')">8점</button>
+        </div>
+        <div class="quiz-feedback correct" id="q2">✅ 수학 85점 − 영어 72점 = <strong>13점</strong> 차이입니다.</div>
+      </div>
+
+      <div class="quiz-block">
+        <div class="quiz-q">이 차트에서 Y축은 무엇을 나타내나요?</div>
+        <div class="quiz-options">
+          <button class="quiz-btn" onclick="answer(this,'wrong','q3')">학생 수</button>
+          <button class="quiz-btn" onclick="answer(this,'wrong','q3')">과목 수</button>
+          <button class="quiz-btn" onclick="answer(this,'correct','q3')">평균 점수</button>
+          <button class="quiz-btn" onclick="answer(this,'wrong','q3')">학년</button>
+        </div>
+        <div class="quiz-feedback correct" id="q3">✅ Y축(세로축)은 <strong>평균 점수</strong>를 나타냅니다. 차트를 읽을 때는 항상 축 제목을 먼저 확인하세요!</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════ -->
+  <!-- 2. 꺾은선 차트 -->
+  <!-- ══════════════════════════════════ -->
+  <div class="section-title"><div class="section-title-icon">📈</div>2. 꺾은선 차트 읽기</div>
+  <p style="font-size:14px;color:var(--text-secondary);margin-bottom:14px;">꺾은선 차트는 <strong>시간에 따른 변화</strong>를 보여줄 때 사용합니다. 선이 올라가면 증가, 내려가면 감소입니다. 기울기가 클수록 변화가 급격합니다.</p>
+  <div class="note-box">
+    <span class="note-label">참고</span>
+    <div>꺾은선 차트에서는 <strong>추세(트렌드)</strong>를 읽는 것이 핵심입니다. "전반적으로 올라가는가? 내려가는가? 일정한가?"를 먼저 파악하세요.</div>
+  </div>
+
+  <div class="practice-box">
+    <div class="practice-header" onclick="togglePractice(this)">
+      <div class="practice-header-left">
+        <span class="practice-badge">실습 2</span>
+        <span class="practice-title-text">서울 월별 기온 꺾은선 차트 읽기</span>
+      </div>
+      <span class="practice-toggle">▲ 접기</span>
+    </div>
+    <div class="practice-body">
+      <p style="font-size:13.5px;color:var(--text-secondary);margin-bottom:14px;">아래 꺾은선 차트를 관찰하고, 질문에 답해보세요. <strong>데이터 포인트에 마우스를 올리면 수치가 나타납니다.</strong></p>
+      <div class="chart-wrap">
+        <div class="chart-title">2025년 서울 월별 평균 기온</div>
+        <canvas id="lineChart" height="270"></canvas>
+      </div>
+
+      <div class="quiz-block">
+        <div class="quiz-q">기온이 가장 높은 달은 언제인가요?</div>
+        <div class="quiz-options">
+          <button class="quiz-btn" onclick="answer(this,'wrong','q4')">6월</button>
+          <button class="quiz-btn" onclick="answer(this,'wrong','q4')">7월</button>
+          <button class="quiz-btn" onclick="answer(this,'correct','q4')">8월</button>
+          <button class="quiz-btn" onclick="answer(this,'wrong','q4')">9월</button>
+        </div>
+        <div class="quiz-feedback correct" id="q4">✅ 8월의 평균 기온이 <strong>27.1°C</strong>로 가장 높습니다. 꺾은선에서 가장 높은 점을 찾으면 됩니다.</div>
+      </div>
+
+      <div class="quiz-block">
+        <div class="quiz-q">기온이 가장 크게 상승한 구간은 어디인가요?</div>
+        <div class="quiz-options">
+          <button class="quiz-btn" onclick="answer(this,'correct','q5')">3월→4월</button>
+          <button class="quiz-btn" onclick="answer(this,'wrong','q5')">4월→5월</button>
+          <button class="quiz-btn" onclick="answer(this,'wrong','q5')">5월→6월</button>
+          <button class="quiz-btn" onclick="answer(this,'wrong','q5')">6월→7월</button>
+        </div>
+        <div class="quiz-feedback correct" id="q5">✅ 3월(5.7°C)→4월(13.2°C)로 <strong>+7.5°C</strong> 상승했습니다. 선의 기울기가 가장 가파른 구간이죠.</div>
+      </div>
+
+      <div class="quiz-block">
+        <div class="quiz-q">이 차트에서 알 수 있는 것은?</div>
+        <div class="quiz-options">
+          <button class="quiz-btn" onclick="answer(this,'wrong','q6')">각 달의 강수량</button>
+          <button class="quiz-btn" onclick="answer(this,'correct','q6')">기온의 변화 추세</button>
+          <button class="quiz-btn" onclick="answer(this,'wrong','q6')">학생 수의 변화</button>
+          <button class="quiz-btn" onclick="answer(this,'wrong','q6')">지역별 기온 비교</button>
+        </div>
+        <div class="quiz-feedback correct" id="q6">✅ 꺾은선 차트는 <strong>시간에 따른 변화 추세</strong>를 보여줍니다. 이 차트에서는 월별 기온의 오르내림을 한눈에 파악할 수 있습니다.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════ -->
+  <!-- 3. 원형 차트 -->
+  <!-- ══════════════════════════════════ -->
+  <div class="section-title"><div class="section-title-icon">🥧</div>3. 원형 차트 읽기</div>
+  <p style="font-size:14px;color:var(--text-secondary);margin-bottom:14px;">원형 차트(파이 차트)는 <strong>전체에서 각 부분이 차지하는 비율</strong>을 보여줍니다. 전체를 100%로 놓고, 각 조각의 크기를 비교합니다.</p>
+  <div class="warn-box">
+    <span class="warn-label">주의</span>
+    <div>원형 차트는 항목이 <strong>5~6개 이하</strong>일 때 효과적입니다. 항목이 너무 많으면 조각이 작아져서 비교가 어려워집니다.</div>
+  </div>
+
+  <div class="practice-box">
+    <div class="practice-header" onclick="togglePractice(this)">
+      <div class="practice-header-left">
+        <span class="practice-badge">실습 3</span>
+        <span class="practice-title-text">등교 교통수단 원형 차트 읽기</span>
+      </div>
+      <span class="practice-toggle">▲ 접기</span>
+    </div>
+    <div class="practice-body">
+      <p style="font-size:13.5px;color:var(--text-secondary);margin-bottom:14px;">아래 원형 차트를 관찰하고, 질문에 답해보세요. <strong>조각 위에 마우스를 올리면 상세 정보가 나타납니다.</strong></p>
+      <div class="chart-wrap">
+        <div class="chart-title">학생 200명의 등교 교통수단</div>
+        <canvas id="pieChart" height="300"></canvas>
+      </div>
+
+      <div class="quiz-block">
+        <div class="quiz-q">가장 많은 학생이 이용하는 교통수단은?</div>
+        <div class="quiz-options">
+          <button class="quiz-btn" onclick="answer(this,'wrong','q7')">도보</button>
+          <button class="quiz-btn" onclick="answer(this,'correct','q7')">버스</button>
+          <button class="quiz-btn" onclick="answer(this,'wrong','q7')">지하철</button>
+          <button class="quiz-btn" onclick="answer(this,'wrong','q7')">자가용</button>
+        </div>
+        <div class="quiz-feedback correct" id="q7">✅ <strong>버스가 62명(31%)</strong>으로 가장 많습니다. 원형 차트에서 가장 큰 조각을 찾으면 됩니다.</div>
+      </div>
+
+      <div class="quiz-block">
+        <div class="quiz-q">도보와 자전거를 합치면 전체의 약 몇 %인가요?</div>
+        <div class="quiz-options">
+          <button class="quiz-btn" onclick="answer(this,'wrong','q8')">약 22%</button>
+          <button class="quiz-btn" onclick="answer(this,'correct','q8')">약 33%</button>
+          <button class="quiz-btn" onclick="answer(this,'wrong','q8')">약 40%</button>
+          <button class="quiz-btn" onclick="answer(this,'wrong','q8')">약 50%</button>
+        </div>
+        <div class="quiz-feedback correct" id="q8">✅ 도보 45명 + 자전거 20명 = <strong>65명</strong>. 전체 200명 중 65명은 <strong>32.5% ≈ 약 33%</strong>입니다.</div>
+      </div>
+
+      <div class="quiz-block">
+        <div class="quiz-q">원형 차트가 보여주는 것은?</div>
+        <div class="quiz-options">
+          <button class="quiz-btn" onclick="answer(this,'wrong','q9')">각 항목의 시간별 변화</button>
+          <button class="quiz-btn" onclick="answer(this,'correct','q9')">전체에서 각 항목이 차지하는 비율</button>
+          <button class="quiz-btn" onclick="answer(this,'wrong','q9')">두 항목 사이의 관계</button>
+          <button class="quiz-btn" onclick="answer(this,'wrong','q9')">항목별 순위</button>
+        </div>
+        <div class="quiz-feedback correct" id="q9">✅ 원형 차트는 전체를 100%로 놓고, <strong>각 부분이 차지하는 비율</strong>을 보여줍니다. "비율"과 "구성"을 볼 때 적합합니다.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 비교표 -->
+  <div class="section-title"><div class="section-title-icon">📋</div>세 가지 차트 비교</div>
+  <table class="compare-table">
+    <thead><tr><th>차트 유형</th><th>적합한 상황</th><th>읽는 포인트</th></tr></thead>
+    <tbody>
+      <tr><td><strong>막대 차트</strong></td><td>항목별 크기 비교</td><td>막대의 높이 비교</td></tr>
+      <tr><td><strong>꺾은선 차트</strong></td><td>시간에 따른 변화</td><td>선의 기울기와 추세</td></tr>
+      <tr><td><strong>원형 차트</strong></td><td>비율/구성 표현</td><td>조각의 크기(비율)</td></tr>
+    </tbody>
+  </table>
+
+  <div class="think-box">
+    <div class="think-label">💭 생각해보기</div>
+    <ul class="think-list">
+      <li>같은 데이터라도 차트 유형에 따라 강조되는 정보가 달라집니다.</li>
+      <li>교통수단 데이터를 <strong>막대 차트</strong>로 그리면 "명 수 비교"가 강조되고, <strong>원형 차트</strong>로 그리면 "비율"이 강조됩니다.</li>
+      <li>어떤 이야기를 하고 싶은지에 따라 <strong>적절한 차트를 선택</strong>해야 합니다!</li>
+    </ul>
+  </div>
+
+  <!-- 도전 -->
+  <div class="practice-box">
+    <div class="practice-header" onclick="togglePractice(this)">
+      <div class="practice-header-left">
+        <span class="practice-badge" style="background:var(--accent);">도전</span>
+        <span class="practice-title-text">차트에서 이야기 만들기</span>
+      </div>
+      <span class="practice-toggle">▲ 접기</span>
+    </div>
+    <div class="challenge-body">
+      <p style="font-size:13.5px;color:var(--text-secondary);margin-bottom:14px;">위에서 본 세 가지 차트 중 하나를 골라, 차트가 말해주는 이야기를 2~3문장으로 적어보세요.</p>
+      <div class="challenge-example">
+        <strong>예시:</strong> "과목별 평균 점수를 보면, 과학이 86점으로 가장 높고 영어가 72점으로 가장 낮습니다. 과학과 영어의 점수 차이가 14점으로 크기 때문에, 영어 학습 지원이 필요할 수 있습니다."
+      </div>
+      <div class="qa-item">
+        <div class="qa-q" onclick="toggleQA(this)">좋은 이야기 만들기의 포인트<span class="qa-toggle">▼ 확인하기</span></div>
+        <div class="qa-a">
+          <ol>
+            <li>구체적인 수치를 언급합니다 (86점, 72점 등)</li>
+            <li>비교를 포함합니다 (가장 높은/낮은, 차이 등)</li>
+            <li>수치를 바탕으로 해석이나 시사점을 제시합니다</li>
+            <li>이것이 바로 <strong>"데이터 기반 스토리텔링"</strong>입니다!</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 요약 -->
+  <div class="summary-box">
+    <div class="summary-title">이번 레슨에서 배운 것</div>
+    <ul class="summary-list">
+      <li>차트 읽기 <strong>5단계</strong>: 제목 → 축 → 단위 → 패턴 → 비교</li>
+      <li><strong>막대 차트</strong>: 항목별 크기 비교에 적합, 막대 높이를 비교</li>
+      <li><strong>꺾은선 차트</strong>: 시간 변화에 적합, 기울기와 추세를 파악</li>
+      <li><strong>원형 차트</strong>: 비율 표현에 적합, 조각 크기를 비교</li>
+      <li>차트에서 읽은 내용을 <strong>문장으로 표현</strong>하는 연습</li>
+    </ul>
+  </div>
+
+  <div class="nav-buttons">
+    <button class="btn btn-secondary" onclick="location.href='outlier-detective-3-3.html'">← 이전 레슨</button>
+    <div style="display:flex;align-items:center;gap:12px;color:var(--text-muted);font-size:12px;">
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:100%"></div></div>
+    </div>
+    <button class="btn btn-primary" disabled style="opacity:0.35;cursor:not-allowed;">다음 레슨 →</button>
+  </div>
+
+</div>
+</main>
+
+<script>
+// ─────────────────────────────────────────
+// TOOLTIP
+// ─────────────────────────────────────────
+const tooltip = document.getElementById('tooltip');
+function showTip(e, html) {
+  tooltip.innerHTML = html;
+  tooltip.style.display = 'block';
+  moveTip(e);
+}
+function moveTip(e) {
+  const x = e.clientX, y = e.clientY;
+  const tw = tooltip.offsetWidth || 140;
+  const left = x + 16 + tw > window.innerWidth ? x - tw - 10 : x + 16;
+  tooltip.style.left = left + 'px';
+  tooltip.style.top  = (y - 44) + 'px';
+}
+function hideTip() { tooltip.style.display = 'none'; }
+
+// ─────────────────────────────────────────
+// CHART WIDTH HELPER
+// ─────────────────────────────────────────
+function getChartW(canvas) {
+  let el = canvas.parentElement;
+  while (el && el.clientWidth < 100) el = el.parentElement;
+  return Math.max((el ? el.clientWidth : 780) - 40, 300);
+}
+window.addEventListener('load', function() {
+
+// ─────────────────────────────────────────
+// CHART 1: BAR CHART — 과목별 평균 점수
+// ─────────────────────────────────────────
+(function() {
+  const canvas = document.getElementById('barChart');
+  const dpr = window.devicePixelRatio || 1;
+  const W = getChartW(canvas);
+  const H = 260;
+  canvas.width  = W * dpr; canvas.height = H * dpr;
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const DATA = [
+    { label: '국어', value: 78,  color: '#5B8BF5', hcolor: '#3B6FE8' },
+    { label: '수학', value: 85,  color: '#2ECC71', hcolor: '#1A9E55' },
+    { label: '영어', value: 72,  color: '#F97316', hcolor: '#C05A10' },
+    { label: '과학', value: 86,  color: '#E74C3C', hcolor: '#B03030' },
+    { label: '사회', value: 80,  color: '#8B5CF6', hcolor: '#6D3DCC' },
+  ];
+
+  const PAD = { top: 30, right: 20, bottom: 44, left: 52 };
+  const cW = W - PAD.left - PAD.right;
+  const cH = H - PAD.top - PAD.bottom;
+  const yMax = 100, yMin = 0;
+  const gap  = cW / DATA.length;
+  const barW = gap * 0.52;
+
+  // precompute bar regions
+  const bars = DATA.map((d, i) => {
+    const bH = ((d.value - yMin) / (yMax - yMin)) * cH;
+    const x  = PAD.left + gap * i + (gap - barW) / 2;
+    const y  = PAD.top + cH - bH;
+    return { ...d, x, y, w: barW, h: bH };
+  });
+
+  let hoverIdx = -1;
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    // grid
+    for (let v = 0; v <= 100; v += 20) {
+      const y = PAD.top + cH - ((v - yMin) / (yMax - yMin)) * cH;
+      ctx.strokeStyle = '#E4E9F2'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(PAD.left, y); ctx.lineTo(PAD.left + cW, y); ctx.stroke();
+      ctx.fillStyle = '#9AA5B4'; ctx.font = '11px Noto Sans KR'; ctx.textAlign = 'right';
+      ctx.fillText(v, PAD.left - 6, y + 4);
+    }
+    // Y axis label
+    ctx.save(); ctx.translate(13, PAD.top + cH / 2); ctx.rotate(-Math.PI / 2);
+    ctx.fillStyle = '#4A5568'; ctx.font = '11px Noto Sans KR'; ctx.textAlign = 'center';
+    ctx.fillText('평균 점수', 0, 0); ctx.restore();
+
+    bars.forEach((b, i) => {
+      const isHov = i === hoverIdx;
+      // shadow on hover
+      if (isHov) {
+        ctx.shadowColor = 'rgba(0,0,0,0.18)';
+        ctx.shadowBlur = 8;
+        ctx.shadowOffsetY = 3;
+      }
+      // bar
+      ctx.fillStyle = isHov ? b.hcolor : b.color;
+      ctx.beginPath();
+      ctx.roundRect(b.x, b.y, b.w, b.h, [5, 5, 0, 0]);
+      ctx.fill();
+      ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+
+      // value label above bar
+      ctx.fillStyle = isHov ? b.hcolor : '#4A5568';
+      ctx.font = isHov ? 'bold 13px Noto Sans KR' : '12px Noto Sans KR';
+      ctx.textAlign = 'center';
+      ctx.fillText(b.value + '점', b.x + b.w / 2, b.y - 6);
+
+      // x label
+      ctx.fillStyle = '#4A5568'; ctx.font = '12px Noto Sans KR';
+      ctx.fillText(b.label, b.x + b.w / 2, H - 14);
+    });
+    // axes
+    ctx.strokeStyle = '#CBD5E0'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(PAD.left, PAD.top); ctx.lineTo(PAD.left, PAD.top + cH); ctx.lineTo(PAD.left + cW, PAD.top + cH); ctx.stroke();
+  }
+
+  draw();
+
+  canvas.addEventListener('mousemove', e => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+    let found = -1;
+    bars.forEach((b, i) => {
+      if (mx >= b.x && mx <= b.x + b.w && my >= b.y && my <= b.y + b.h) found = i;
+    });
+    if (found !== hoverIdx) { hoverIdx = found; draw(); }
+    if (found >= 0) {
+      showTip(e, `<b>${bars[found].label}</b><br>평균 점수: ${bars[found].value}점`);
+    } else { hideTip(); }
+    moveTip(e);
+  });
+  canvas.addEventListener('mouseleave', () => { hideTip(); hoverIdx = -1; draw(); });
+})();
+
+// ─────────────────────────────────────────
+// CHART 2: LINE CHART — 서울 월별 기온
+// ─────────────────────────────────────────
+(function() {
+  const canvas = document.getElementById('lineChart');
+  const dpr = window.devicePixelRatio || 1;
+  const W = getChartW(canvas);
+  const H = 270;
+  canvas.width  = W * dpr; canvas.height = H * dpr;
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const DATA = [
+    {month:'3월', temp:5.7}, {month:'4월', temp:13.2}, {month:'5월', temp:18.6},
+    {month:'6월', temp:23.5}, {month:'7월', temp:26.8}, {month:'8월', temp:27.1},
+    {month:'9월', temp:22.3}, {month:'10월', temp:15.1}
+  ];
+
+  const PAD = { top: 28, right: 24, bottom: 44, left: 52 };
+  const cW = W - PAD.left - PAD.right;
+  const cH = H - PAD.top - PAD.bottom;
+  const yMin = 0, yMax = 30;
+  const n = DATA.length;
+
+  function toC(i, v) {
+    return [
+      PAD.left + (i / (n - 1)) * cW,
+      PAD.top  + ((yMax - v) / (yMax - yMin)) * cH
+    ];
+  }
+
+  // precompute points
+  const pts = DATA.map((d, i) => { const [x,y]=toC(i,d.temp); return {x,y,...d}; });
+  let hoverIdx = -1;
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    // grid
+    for (let v = 0; v <= 30; v += 5) {
+      const y = PAD.top + ((yMax - v) / (yMax - yMin)) * cH;
+      ctx.strokeStyle = '#E4E9F2'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(PAD.left, y); ctx.lineTo(PAD.left + cW, y); ctx.stroke();
+      ctx.fillStyle = '#9AA5B4'; ctx.font = '11px Noto Sans KR'; ctx.textAlign = 'right';
+      ctx.fillText(v, PAD.left - 6, y + 4);
+    }
+    // Y label
+    ctx.save(); ctx.translate(13, PAD.top + cH / 2); ctx.rotate(-Math.PI / 2);
+    ctx.fillStyle = '#4A5568'; ctx.font = '11px Noto Sans KR'; ctx.textAlign = 'center';
+    ctx.fillText('기온 (°C)', 0, 0); ctx.restore();
+
+    // area fill
+    ctx.beginPath();
+    pts.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+    ctx.lineTo(pts[n-1].x, PAD.top + cH);
+    ctx.lineTo(pts[0].x, PAD.top + cH);
+    ctx.closePath();
+    const grad = ctx.createLinearGradient(0, PAD.top, 0, PAD.top + cH);
+    grad.addColorStop(0, 'rgba(231,76,60,0.18)');
+    grad.addColorStop(1, 'rgba(231,76,60,0.01)');
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // line
+    ctx.beginPath();
+    pts.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+    ctx.strokeStyle = '#E74C3C'; ctx.lineWidth = 2.5; ctx.lineJoin = 'round';
+    ctx.stroke();
+
+    // dots
+    pts.forEach((p, i) => {
+      const isHov = i === hoverIdx;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, isHov ? 7 : 4.5, 0, Math.PI * 2);
+      ctx.fillStyle = isHov ? '#C0392B' : '#E74C3C';
+      ctx.fill();
+      ctx.strokeStyle = 'white'; ctx.lineWidth = isHov ? 2 : 1.5;
+      ctx.stroke();
+
+      // x label
+      ctx.fillStyle = '#4A5568'; ctx.font = '12px Noto Sans KR'; ctx.textAlign = 'center';
+      ctx.fillText(p.month, p.x, H - 12);
+    });
+
+    // axes
+    ctx.strokeStyle = '#CBD5E0'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(PAD.left, PAD.top); ctx.lineTo(PAD.left, PAD.top + cH); ctx.lineTo(PAD.left + cW, PAD.top + cH); ctx.stroke();
+  }
+
+  draw();
+
+  canvas.addEventListener('mousemove', e => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+    let found = -1, minD = 18;
+    pts.forEach((p, i) => {
+      const d = Math.hypot(p.x - mx, p.y - my);
+      if (d < minD) { minD = d; found = i; }
+    });
+    if (found !== hoverIdx) { hoverIdx = found; draw(); }
+    if (found >= 0) {
+      const p = pts[found];
+      showTip(e, `<b>${p.month}</b><br>평균 기온: ${p.temp}°C`);
+    } else { hideTip(); }
+    moveTip(e);
+  });
+  canvas.addEventListener('mouseleave', () => { hideTip(); hoverIdx = -1; draw(); });
+})();
+
+// ─────────────────────────────────────────
+// CHART 3: PIE / DONUT CHART — 교통수단
+// ─────────────────────────────────────────
+(function() {
+  const canvas = document.getElementById('pieChart');
+  const dpr = window.devicePixelRatio || 1;
+  const W = getChartW(canvas);
+  const H = 300;
+  canvas.width  = W * dpr; canvas.height = H * dpr;
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const DATA = [
+    { label: '버스',   count: 62, pct: 31.0,  color: '#2ECC71', hcolor: '#1A9E55' },
+    { label: '도보',   count: 45, pct: 22.5,  color: '#5B8BF5', hcolor: '#3B6FE8' },
+    { label: '지하철', count: 38, pct: 19.0,  color: '#F97316', hcolor: '#C05A10' },
+    { label: '자가용', count: 35, pct: 17.5,  color: '#E74C3C', hcolor: '#B03030' },
+    { label: '자전거', count: 20, pct: 10.0,  color: '#8B5CF6', hcolor: '#6D3DCC' },
+  ];
+
+  const total = DATA.reduce((s,d) => s + d.count, 0);
+  const cx = W * 0.38, cy = H / 2;
+  const outerR = Math.min(H * 0.42, 120);
+  const innerR = outerR * 0.52;
+  const legendX = W * 0.67;
+
+  // precompute slices
+  let startAngle = -Math.PI / 2;
+  const slices = DATA.map(d => {
+    const angle = (d.count / total) * 2 * Math.PI;
+    const mid   = startAngle + angle / 2;
+    const s = { ...d, startAngle, angle, mid };
+    startAngle += angle;
+    return s;
+  });
+
+  let hoverIdx = -1;
+
+  function inSlice(mx, my, s, extraR = 0) {
+    const dx = mx - cx, dy = my - cy;
+    const r = Math.hypot(dx, dy);
+    if (r < innerR || r > outerR + extraR) return false;
+    let angle = Math.atan2(dy, dx);
+    let start = s.startAngle, end = start + s.angle;
+    // normalize angle to [start, end]
+    while (angle < start) angle += 2 * Math.PI;
+    return angle <= end;
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    // draw slices
+    slices.forEach((s, i) => {
+      const isHov = i === hoverIdx;
+      const offset = isHov ? 8 : 0;
+      const ox = Math.cos(s.mid) * offset;
+      const oy = Math.sin(s.mid) * offset;
+
+      if (isHov) { ctx.shadowColor = 'rgba(0,0,0,0.2)'; ctx.shadowBlur = 12; ctx.shadowOffsetY = 3; }
+      ctx.beginPath();
+      ctx.moveTo(cx + ox, cy + oy);
+      ctx.arc(cx + ox, cy + oy, isHov ? outerR + 6 : outerR, s.startAngle, s.startAngle + s.angle);
+      ctx.closePath();
+      ctx.fillStyle = isHov ? s.hcolor : s.color;
+      ctx.fill();
+      ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+
+      // white gap
+      ctx.beginPath();
+      ctx.moveTo(cx + ox, cy + oy);
+      ctx.arc(cx + ox, cy + oy, isHov ? outerR + 6 : outerR, s.startAngle, s.startAngle + s.angle);
+      ctx.closePath();
+      ctx.strokeStyle = 'white'; ctx.lineWidth = 2;
+      ctx.stroke();
+    });
+
+    // donut hole
+    ctx.beginPath();
+    ctx.arc(cx, cy, innerR, 0, 2 * Math.PI);
+    ctx.fillStyle = 'white';
+    ctx.fill();
+
+    // center text
+    const hov = hoverIdx >= 0 ? slices[hoverIdx] : null;
+    if (hov) {
+      ctx.fillStyle = hov.hcolor;
+      ctx.font = 'bold 18px Noto Sans KR'; ctx.textAlign = 'center';
+      ctx.fillText(hov.pct + '%', cx, cy + 4);
+      ctx.fillStyle = '#4A5568'; ctx.font = '11px Noto Sans KR';
+      ctx.fillText(hov.label, cx, cy + 20);
+    } else {
+      ctx.fillStyle = '#1A1F36'; ctx.font = 'bold 16px Noto Sans KR'; ctx.textAlign = 'center';
+      ctx.fillText('200명', cx, cy + 4);
+      ctx.fillStyle = '#9AA5B4'; ctx.font = '11px Noto Sans KR';
+      ctx.fillText('전체', cx, cy + 20);
+    }
+
+    // percentage labels on slices
+    slices.forEach((s, i) => {
+      if (s.pct < 8) return; // skip tiny slices
+      const isHov = i === hoverIdx;
+      const offset = isHov ? 8 : 0;
+      const r = (outerR + innerR) / 2 + offset;
+      const ox = Math.cos(s.mid) * offset + cx;
+      const oy = Math.sin(s.mid) * offset + cy;
+      const lx = ox + Math.cos(s.mid) * r - Math.cos(s.mid) * offset;
+      const ly = oy + Math.sin(s.mid) * r - Math.sin(s.mid) * offset;
+      ctx.fillStyle = 'white';
+      ctx.font = 'bold 12px Noto Sans KR'; ctx.textAlign = 'center';
+      ctx.fillText(s.pct + '%', lx, ly + 4);
+    });
+
+    // legend (right side)
+    slices.forEach((s, i) => {
+      const isHov = i === hoverIdx;
+      const ly = cy - (slices.length - 1) * 22 / 2 + i * 28;
+      ctx.fillStyle = isHov ? s.hcolor : s.color;
+      ctx.beginPath(); ctx.roundRect(legendX, ly - 8, 14, 14, 3); ctx.fill();
+      ctx.fillStyle = isHov ? '#1A1F36' : '#4A5568';
+      ctx.font = isHov ? 'bold 13px Noto Sans KR' : '12.5px Noto Sans KR';
+      ctx.textAlign = 'left';
+      ctx.fillText(`${s.label}  ${s.count}명 (${s.pct}%)`, legendX + 20, ly + 4);
+    });
+  }
+
+  draw();
+
+  canvas.addEventListener('mousemove', e => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+    let found = -1;
+    slices.forEach((s, i) => { if (inSlice(mx, my, s, 8)) found = i; });
+    if (found !== hoverIdx) { hoverIdx = found; draw(); }
+    if (found >= 0) {
+      const s = slices[found];
+      showTip(e, `<b>${s.label}</b><br>${s.count}명 &nbsp;·&nbsp; ${s.pct}%`);
+    } else { hideTip(); }
+    moveTip(e);
+  });
+  canvas.addEventListener('mouseleave', () => { hideTip(); hoverIdx = -1; draw(); });
+})();
+
+}); // end window.addEventListener('load')
+
+// ─────────────────────────────────────────
+// QUIZ & UI HELPERS  (global — called from onclick)
+// ─────────────────────────────────────────
+function answer(btn, result, fbId) {
+  const block = btn.closest('.quiz-block');
+  if (block.dataset.answered) return;
+  block.dataset.answered = '1';
+  block.querySelectorAll('.quiz-btn').forEach(b => {
+    b.disabled = true;
+    if (b === btn) b.classList.add(result);
+    else if (result === 'wrong' && b.onclick && b.onclick.toString().includes("'correct'"))
+      b.classList.add('reveal-correct');
+  });
+  const fb = document.getElementById(fbId);
+  fb.style.display = 'block';
+  fb.className = 'quiz-feedback ' + result;
+}
+
+function toggleQA(el) {
+  const ans = el.nextElementSibling;
+  const tog = el.querySelector('.qa-toggle');
+  const open = ans.classList.contains('show');
+  ans.classList.toggle('show');
+  tog.textContent = open ? '▼ 확인하기' : '▲ 숨기기';
+}
+
+function togglePractice(header) {
+  const body = header.nextElementSibling;
+  const tog  = header.querySelector('.practice-toggle');
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : 'block';
+  tog.textContent = open ? '▼ 펼치기' : '▲ 접기';
+}
+</script>
+</body>
+</html>
