@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4-3 나만의 차트 만들기 | 인공지능 기초 with 데이터 분석</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --primary:#3B6FE8;--primary-light:#EEF3FF;--primary-dark:#2451C7;
+  --accent:#FF6B35;--accent-light:#FFF0EB;
+  --green:#2ECC71;--green-light:#E8F8F0;
+  --red:#E74C3C;--red-light:#FDECEA;
+  --yellow:#F1C40F;--yellow-light:#FEFCE8;
+  --teal:#0EA5A0;--teal-light:#EDFAFA;
+  --purple:#8B5CF6;--purple-light:#F3F0FF;
+  --text-primary:#1A1F36;--text-secondary:#4A5568;--text-muted:#9AA5B4;
+  --bg:#F7F8FC;--card-bg:#FFFFFF;--border:#E4E9F2;
+  --radius:12px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text-primary);min-height:100vh;font-size:15px;line-height:1.7;}
+.topbar{position:sticky;top:0;z-index:200;background:#fff;border-bottom:1px solid var(--border);padding:0 32px;height:52px;display:flex;align-items:center;justify-content:space-between;}
+.topbar-home{display:flex;align-items:center;gap:10px;text-decoration:none;}
+.topbar-logo-icon{width:30px;height:30px;background:linear-gradient(135deg,var(--primary),#6B9DFF);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;}
+.topbar-logo-text{font-size:13px;font-weight:700;color:var(--text-primary);}
+.topbar-back-btn{background:var(--primary-light);color:var(--primary);border:1px solid #C5D5FF;border-radius:8px;padding:6px 14px;font-size:13px;font-weight:600;text-decoration:none;transition:all .15s;}
+.topbar-back-btn:hover{background:var(--primary);color:white;}
+.main{width:100%;}
+.content{max-width:860px;margin:0 auto;padding:40px 40px 80px;}
+.breadcrumb{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);margin-bottom:24px;}
+.breadcrumb span{color:var(--accent);font-weight:500;}
+.lesson-header{background:linear-gradient(135deg,#4C1D95,#7C3AED);border-radius:16px;padding:32px 36px;color:white;margin-bottom:32px;position:relative;overflow:hidden;}
+.lesson-header::before{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,0.06);}
+.lesson-meta{display:flex;align-items:center;gap:10px;font-size:12px;opacity:.85;margin-bottom:10px;}
+.lesson-meta-badge{background:rgba(255,255,255,0.2);border-radius:20px;padding:3px 10px;font-weight:500;}
+.lesson-title{font-size:28px;font-weight:700;margin-bottom:6px;}
+.lesson-subtitle{font-size:15px;opacity:.85;}
+.intro-text{background:var(--card-bg);border-radius:var(--radius);padding:22px 28px;border:1px solid var(--border);color:var(--text-secondary);font-size:15px;line-height:1.85;margin-bottom:28px;}
+.section-title{font-size:18px;font-weight:700;color:var(--text-primary);margin:32px 0 16px;display:flex;align-items:center;gap:10px;padding-bottom:12px;border-bottom:2px solid #DDD6FE;}
+.section-title-icon{width:32px;height:32px;background:#EDE9FE;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+
+/* CONCEPT BOX */
+.concept-box{background:linear-gradient(135deg,var(--purple-light),#F0F9FF);border:1.5px solid #D4C8FF;border-radius:var(--radius);padding:20px 26px;margin-bottom:24px;}
+.concept-label{display:inline-flex;align-items:center;gap:6px;background:var(--purple);color:white;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;margin-bottom:10px;}
+.concept-text{font-size:14px;color:var(--text-secondary);line-height:1.75;}
+
+/* DATA PREVIEW TABLE */
+.preview-wrap{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:28px;}
+.preview-table{width:100%;border-collapse:collapse;font-size:13px;}
+.preview-table th{background:#4472C4;color:white;padding:10px 14px;text-align:center;font-weight:700;font-size:12px;}
+.preview-table .subrow td{background:#D9E1F2;color:#4472C4;font-size:11px;font-style:italic;padding:4px 14px;text-align:center;border-bottom:2px solid var(--border);}
+.preview-table tbody tr:nth-child(odd) td{background:#F7F8FC;}
+.preview-table tbody tr:nth-child(even) td{background:#EEF3FF;}
+.preview-table td{padding:8px 14px;text-align:center;border-bottom:1px solid #F0F0F0;}
+.preview-total{background:var(--purple-light);border-top:2px solid #D4C8FF;padding:10px 16px;font-size:13px;color:var(--purple);font-weight:600;text-align:center;}
+
+/* PRACTICE BOX */
+.practice-box{border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:28px;}
+.practice-header{background:var(--text-primary);color:white;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;}
+.practice-header-left{display:flex;align-items:center;gap:10px;}
+.practice-badge{background:var(--purple);color:white;font-size:10px;font-weight:700;padding:2px 8px;border-radius:12px;}
+.practice-title-text{font-size:15px;font-weight:600;}
+.practice-toggle{font-size:12px;opacity:.75;}
+.practice-body{background:var(--card-bg);padding:24px 28px;}
+
+/* CHART BUILDER */
+.builder-controls{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px;}
+.builder-controls.two-col{grid-template-columns:1fr 1fr;}
+.builder-controls.three-col{grid-template-columns:1fr 1fr 1fr;}
+.ctrl-group{display:flex;flex-direction:column;gap:6px;}
+.ctrl-label{font-size:12px;font-weight:700;color:var(--text-secondary);}
+.ctrl-select{padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13.5px;font-family:'Noto Sans KR',sans-serif;color:var(--text-primary);background:white;cursor:pointer;transition:border-color .15s;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7' viewBox='0 0 12 7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239AA5B4' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px;}
+.ctrl-select:focus{outline:none;border-color:var(--primary);}
+.title-input{width:100%;padding:9px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:13.5px;font-family:'Noto Sans KR',sans-serif;color:var(--text-primary);margin-bottom:16px;}
+.title-input:focus{outline:none;border-color:var(--primary);}
+.chart-area{background:white;border:1px solid var(--border);border-radius:var(--radius);padding:20px 20px 14px;min-height:280px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;}
+.chart-area canvas{display:block;}
+.chart-status{font-size:12px;color:var(--text-muted);padding:6px 4px;}
+
+/* MISSION CARDS */
+.mission-list{display:flex;flex-direction:column;gap:14px;margin-bottom:24px;}
+.mission-card{background:var(--card-bg);border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.mission-head{display:flex;align-items:center;gap:14px;padding:14px 20px;background:var(--bg);}
+.mission-num{width:32px;height:32px;border-radius:50%;background:var(--purple);color:white;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.mission-title-text{font-size:15px;font-weight:700;color:var(--text-primary);}
+.mission-body{padding:14px 20px 16px;}
+.mission-hint{font-size:13px;color:var(--text-muted);background:var(--bg);border-radius:8px;padding:8px 14px;margin-bottom:10px;line-height:1.6;}
+.mission-ans-btn{background:none;border:1.5px solid var(--border);border-radius:7px;padding:6px 14px;font-size:12.5px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;color:var(--text-secondary);transition:all .15s;}
+.mission-ans-btn:hover{border-color:var(--purple);color:var(--purple);}
+.mission-ans{display:none;margin-top:10px;background:var(--green-light);border:1px solid var(--green);border-radius:8px;padding:10px 14px;font-size:13px;color:#1A5A30;line-height:1.65;}
+
+/* THINK BOX */
+.think-box{background:linear-gradient(135deg,#F0F4FF,#FFF8F0);border:1.5px solid #C8D8FF;border-radius:var(--radius);padding:22px 28px;margin-bottom:24px;}
+.think-label{display:inline-flex;align-items:center;gap:6px;background:var(--primary);color:white;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;margin-bottom:10px;}
+.think-text{font-size:14px;color:var(--text-secondary);line-height:1.8;}
+
+/* SUMMARY */
+.summary-box{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:26px 30px;margin-bottom:24px;}
+.summary-title{font-size:15px;font-weight:700;color:var(--text-primary);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.summary-title::before{content:'';width:4px;height:18px;background:var(--purple);border-radius:2px;}
+.summary-list{list-style:none;}
+.summary-list li{font-size:14px;color:var(--text-secondary);padding:8px 0;display:flex;align-items:flex-start;gap:10px;border-bottom:1px dashed var(--border);}
+.summary-list li:last-child{border-bottom:none;}
+.summary-list li::before{content:'✓';color:var(--green);font-weight:700;flex-shrink:0;margin-top:1px;}
+
+/* NAV */
+.nav-buttons{display:flex;justify-content:space-between;align-items:center;margin-top:40px;padding-top:24px;border-top:1px solid var(--border);}
+.btn{padding:12px 24px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all .15s;display:flex;align-items:center;gap:8px;border:none;}
+.btn-secondary{background:var(--bg);color:var(--text-secondary);border:1px solid var(--border);}
+.btn-secondary:hover{background:var(--border);}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:translateY(0);}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="topbar-home" href="index.html">
+    <div class="topbar-logo-icon">📊</div>
+    <div class="topbar-logo-text">인공지능 기초 with 데이터 분석</div>
+  </a>
+  <a class="topbar-back-btn" href="index.html">⌂ 메인으로</a>
+</header>
+
+<main class="main">
+<div class="content">
+
+  <div class="breadcrumb">홈 › 시각화로 이야기하기 › <span>4-3 나만의 차트 만들기</span></div>
+
+  <div class="lesson-header">
+    <div class="lesson-meta">
+      <span class="lesson-meta-badge">📊 4단원 · 4-3</span>
+      <span>⏱ 25분</span>
+    </div>
+    <div class="lesson-title">나만의 차트 만들기</div>
+    <div class="lesson-subtitle">위젯으로 차트 생성</div>
+  </div>
+
+  <div class="intro-text">
+    지금까지 차트를 읽고, 올바른 차트를 선택하는 방법을 배웠습니다. 이번에는 <strong>직접 나만의 차트를 만들어봅니다!</strong><br><br>
+    코드를 작성할 필요는 없습니다. 아래 도구에서 데이터 열, 차트 유형, 집계 방법을 선택하면 자동으로 차트가 생성됩니다.
+  </div>
+
+  <!-- 핵심 개념 -->
+  <div class="concept-box">
+    <div class="concept-label">💡 핵심 개념</div>
+    <div class="concept-text">
+      이 레슨에서는 <strong>200명 학생의 학교 설문 데이터</strong>를 사용합니다.<br>
+      포함된 항목: <strong>학년</strong>(1~3학년), <strong>교통수단</strong>(도보·버스·지하철·자가용·자전거), <strong>수학점수</strong>(50~100), <strong>급식만족도</strong>(1~5), <strong>스크린타임</strong>(시간, 소수점 1자리)
+    </div>
+  </div>
+
+  <!-- 데이터 미리보기 -->
+  <div class="section-title"><div class="section-title-icon">👀</div>데이터 미리보기</div>
+  <p style="font-size:14px;color:var(--text-secondary);margin-bottom:12px;">차트를 만들기 전에, 어떤 데이터가 있는지 살펴봅시다.</p>
+  <div class="preview-wrap">
+    <table class="preview-table">
+      <thead>
+        <tr>
+          <th>학년</th><th>교통수단</th><th>수학점수</th><th>급식만족도</th><th>스크린타임</th>
+        </tr>
+        <tr class="subrow">
+          <td>범주형</td><td>범주형</td><td>수치형</td><td>수치형</td><td>수치형</td>
+        </tr>
+      </thead>
+      <tbody id="preview-tbody"></tbody>
+    </table>
+    <div class="preview-total">… 총 200명의 데이터</div>
+  </div>
+
+  <!-- 실습 -->
+  <div class="practice-box">
+    <div class="practice-header" onclick="togglePractice(this)">
+      <div class="practice-header-left">
+        <span class="practice-badge">실습</span>
+        <span class="practice-title-text">나만의 차트 만들기</span>
+      </div>
+      <span class="practice-toggle">▲ 접기</span>
+    </div>
+    <div class="practice-body">
+      <p style="font-size:13.5px;color:var(--text-secondary);margin-bottom:18px;">아래 옵션을 선택하면 차트가 자동으로 생성됩니다. <strong>다양한 조합을 시도해보세요!</strong></p>
+
+      <!-- 차트 유형 선택 (항상 표시) -->
+      <div style="display:flex;gap:14px;margin-bottom:16px;flex-wrap:wrap;">
+        <div class="ctrl-group" style="min-width:160px;">
+          <div class="ctrl-label">차트 유형</div>
+          <select class="ctrl-select" id="sel-type" onchange="onTypeChange()">
+            <option value="bar">막대 차트</option>
+            <option value="hbar">가로 막대 차트</option>
+            <option value="line">꺾은선 차트</option>
+            <option value="pie">원형 차트</option>
+            <option value="scatter">산점도</option>
+            <option value="histogram">히스토그램</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 동적 컨트롤 영역 -->
+      <div id="dynamic-controls"></div>
+
+      <!-- 차트 제목 -->
+      <div style="margin-bottom:6px;">
+        <div class="ctrl-label" style="margin-bottom:6px;">차트 제목 <span style="font-weight:400;color:var(--text-muted)">(선택)</span></div>
+        <input type="text" class="title-input" id="chart-title" placeholder="예: 학년별 평균 수학 점수" oninput="drawChart()">
+      </div>
+
+      <!-- 차트 캔버스 -->
+      <div class="chart-area" id="chart-area">
+        <canvas id="main-canvas"></canvas>
+      </div>
+      <div class="chart-status" id="chart-status">현재 설정: 막대 차트 | X축: 학년 | Y축: 수학점수 | 집계: 평균</div>
+    </div>
+  </div>
+
+  <!-- 미션 -->
+  <div class="section-title"><div class="section-title-icon">🎯</div>차트 만들기 미션</div>
+  <p style="font-size:14px;color:var(--text-secondary);margin-bottom:16px;">아래 미션을 따라 직접 차트를 만들어보세요. 위의 차트 빌더에서 옵션을 조정하면 됩니다!</p>
+
+  <div class="mission-list">
+    <div class="mission-card">
+      <div class="mission-head">
+        <div class="mission-num">1</div>
+        <div class="mission-title-text">학년별 평균 수학 점수 비교</div>
+      </div>
+      <div class="mission-body">
+        <div class="mission-hint">💡 힌트: 차트 유형: <strong>막대 차트</strong>, X축: <strong>학년</strong>, Y축: <strong>수학점수</strong>, 집계: <strong>평균</strong></div>
+        <button class="mission-ans-btn" onclick="toggleAns(this)">정답 보기</button>
+        <div class="mission-ans">1학년, 2학년, 3학년의 평균 수학 점수를 비교할 수 있습니다. 어느 학년이 가장 높은지 확인해보세요!</div>
+      </div>
+    </div>
+    <div class="mission-card">
+      <div class="mission-head">
+        <div class="mission-num">2</div>
+        <div class="mission-title-text">교통수단별 학생 수 비율</div>
+      </div>
+      <div class="mission-body">
+        <div class="mission-hint">💡 힌트: 차트 유형: <strong>원형 차트</strong>, 데이터 열: <strong>교통수단</strong></div>
+        <button class="mission-ans-btn" onclick="toggleAns(this)">정답 보기</button>
+        <div class="mission-ans">버스를 이용하는 학생이 가장 많고, 자전거가 가장 적습니다. 비율을 통해 구성을 한눈에 볼 수 있죠!</div>
+      </div>
+    </div>
+    <div class="mission-card">
+      <div class="mission-head">
+        <div class="mission-num">3</div>
+        <div class="mission-title-text">수학 점수 분포 확인</div>
+      </div>
+      <div class="mission-body">
+        <div class="mission-hint">💡 힌트: 차트 유형: <strong>히스토그램</strong>, 데이터 열: <strong>수학점수</strong></div>
+        <button class="mission-ans-btn" onclick="toggleAns(this)">정답 보기</button>
+        <div class="mission-ans">수학 점수가 어떤 범위에 가장 많이 분포하는지 확인할 수 있습니다. 정규분포에 가까운 모양인가요?</div>
+      </div>
+    </div>
+    <div class="mission-card">
+      <div class="mission-head">
+        <div class="mission-num">4</div>
+        <div class="mission-title-text">스크린타임과 수학 점수의 관계</div>
+      </div>
+      <div class="mission-body">
+        <div class="mission-hint">💡 힌트: 차트 유형: <strong>산점도</strong>, X축: <strong>스크린타임</strong>, Y축: <strong>수학점수</strong></div>
+        <button class="mission-ans-btn" onclick="toggleAns(this)">정답 보기</button>
+        <div class="mission-ans">스크린타임이 길수록 수학 점수가 어떤 경향을 보이는지 살펴보세요. 관계가 보이나요?</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 생각해보기 -->
+  <div class="think-box">
+    <div class="think-label">🤔 생각해보기</div>
+    <div class="think-text">
+      같은 데이터로도 차트 유형을 바꾸면 전혀 다른 이야기를 할 수 있습니다.<br>
+      예를 들어, <strong>교통수단 데이터</strong>를 막대 차트로 그리면 "명 수 비교"가 강조되고, 원형 차트로 그리면 "비율"이 강조됩니다.<br>
+      <strong>어떤 이야기를 하고 싶은지에 따라 차트를 선택하세요!</strong>
+    </div>
+  </div>
+
+  <!-- 요약 -->
+  <div class="summary-box">
+    <div class="summary-title">이번 레슨에서 배운 것</div>
+    <ul class="summary-list">
+      <li>데이터 열과 차트 유형을 선택하여 <strong>직접 차트 만들기</strong></li>
+      <li>집계 방법(평균, 합계, 개수 등)에 따라 차트가 달라지는 것 확인</li>
+      <li>같은 데이터를 <strong>다양한 차트로 표현</strong>해보는 경험</li>
+      <li>데이터 특성에 맞는 <strong>차트 유형 직접 탐색</strong></li>
+    </ul>
+  </div>
+
+  <div class="nav-buttons">
+    <button class="btn btn-secondary" onclick="location.href='chart-selection-4-2.html'">← 이전 레슨</button>
+    <span style="font-size:13px;color:var(--text-muted);">4단원 완료! 🎉</span>
+  </div>
+
+</div>
+</main>
+
+<script>
+const DATA=[[3,"도보",80,4,2.2],[1,"자가용",74,4,5.5],[1,"지하철",82,1,1.5],[1,"버스",91,1,2.0],[3,"지하철",73,3,3.2],[2,"자가용",73,1,5.0],[3,"버스",91,3,2.1],[2,"도보",83,3,2.8],[2,"지하철",71,4,4.6],[3,"도보",81,5,1.4],[2,"자가용",71,4,5.3],[3,"도보",71,2,4.3],[2,"자전거",78,5,5.3],[2,"버스",56,4,2.8],[2,"버스",58,4,4.5],[3,"지하철",70,4,1.9],[3,"버스",65,3,2.3],[3,"지하철",79,3,2.6],[1,"버스",66,1,2.6],[2,"도보",61,5,3.8],[3,"버스",90,4,3.0],[3,"버스",73,3,2.2],[3,"지하철",76,4,3.1],[3,"버스",61,3,6.0],[3,"버스",70,4,5.3],[1,"지하철",77,4,3.1],[1,"버스",64,4,3.3],[2,"자전거",79,5,1.1],[3,"도보",69,5,4.8],[3,"버스",73,3,1.8],[1,"자전거",69,5,2.3],[3,"자가용",94,4,1.5],[3,"버스",75,4,4.0],[1,"버스",65,2,5.8],[3,"자전거",84,4,3.4],[1,"자전거",63,5,5.2],[2,"버스",78,3,3.8],[1,"도보",56,3,1.3],[3,"자가용",62,2,3.4],[3,"도보",77,4,4.0],[1,"자전거",83,4,4.4],[3,"버스",77,5,4.2],[2,"자가용",74,3,2.2],[1,"버스",72,4,2.2],[1,"도보",61,4,1.3],[1,"자전거",68,5,1.4],[1,"버스",71,3,3.7],[3,"자전거",86,4,3.4],[2,"자가용",79,2,1.5],[2,"버스",58,3,5.3],[1,"지하철",79,5,1.5],[2,"자가용",72,4,1.5],[1,"도보",69,3,3.1],[2,"버스",82,5,1.4],[3,"도보",86,4,3.7],[1,"자전거",85,5,5.2],[1,"버스",67,3,5.3],[1,"도보",72,1,3.0],[2,"버스",79,4,4.7],[3,"지하철",85,3,1.9],[1,"자전거",71,4,3.7],[3,"버스",74,2,3.4],[3,"도보",64,5,1.4],[1,"도보",64,2,5.3],[2,"도보",84,5,2.2],[3,"도보",89,2,4.3],[3,"버스",75,5,2.0],[3,"버스",86,3,1.7],[3,"버스",79,3,4.8],[1,"도보",69,4,3.8],[1,"도보",79,3,2.3],[2,"자가용",91,5,2.8],[1,"버스",75,4,2.5],[3,"버스",91,4,3.8],[3,"도보",50,5,2.3],[1,"자가용",84,2,2.4],[1,"지하철",76,3,4.2],[2,"버스",73,3,5.5],[1,"도보",76,3,2.4],[1,"버스",56,2,5.9],[1,"자가용",73,4,3.1],[1,"도보",79,5,4.5],[1,"지하철",90,4,3.9],[1,"버스",70,1,2.8],[1,"자가용",67,3,2.2],[1,"버스",70,4,5.4],[3,"자가용",85,5,2.2],[1,"자전거",79,4,5.4],[1,"도보",70,5,4.9],[2,"자가용",81,5,5.1],[2,"도보",76,4,2.9],[1,"자가용",85,3,5.1],[2,"버스",68,4,5.4],[1,"도보",72,2,2.6],[1,"자전거",72,3,4.2],[2,"지하철",61,4,2.7],[1,"도보",78,5,1.9],[2,"도보",78,4,2.7],[2,"버스",76,5,1.6],[3,"도보",73,1,3.2],[3,"자전거",61,4,4.6],[3,"자가용",71,2,3.2],[3,"자전거",72,4,4.3],[1,"지하철",67,3,2.5],[2,"버스",74,4,3.8],[1,"버스",80,5,4.4],[1,"지하철",94,3,3.7],[1,"버스",77,3,4.9],[3,"지하철",78,3,3.2],[1,"버스",75,4,5.8],[3,"도보",56,2,3.6],[3,"지하철",75,2,5.8],[1,"지하철",76,3,2.0],[1,"도보",100,5,4.1],[1,"버스",74,5,3.9],[3,"지하철",79,3,2.2],[3,"지하철",75,5,5.3],[1,"자가용",64,3,5.0],[3,"버스",87,2,2.2],[1,"버스",83,4,4.3],[3,"지하철",83,5,5.5],[3,"자가용",66,5,3.1],[3,"버스",90,2,5.3],[2,"버스",61,3,4.2],[3,"버스",81,3,3.2],[3,"버스",97,3,2.6],[3,"도보",66,2,2.9],[1,"지하철",70,2,3.0],[3,"버스",76,2,5.2],[2,"자전거",70,4,4.5],[3,"버스",60,1,2.8],[2,"자가용",76,5,3.1],[3,"자가용",65,4,5.5],[2,"도보",80,3,1.1],[2,"지하철",66,4,4.6],[2,"자전거",91,5,3.7],[2,"지하철",68,4,1.4],[2,"도보",72,3,1.3],[2,"버스",84,3,2.7],[2,"버스",63,5,3.1],[1,"버스",78,4,1.3],[2,"도보",89,2,5.8],[1,"자가용",59,5,2.0],[1,"지하철",77,3,3.4],[1,"지하철",78,3,4.5],[2,"도보",83,4,4.7],[1,"자가용",63,2,2.6],[3,"도보",62,3,4.4],[2,"버스",81,4,1.4],[3,"자가용",78,3,4.5],[2,"자가용",78,4,1.6],[3,"자가용",79,3,3.1],[2,"도보",69,4,1.1],[2,"자가용",78,2,5.8],[3,"자가용",78,3,1.8],[1,"자가용",68,5,2.4],[3,"자가용",94,3,5.1],[3,"버스",80,5,5.2],[1,"버스",64,3,4.8],[3,"지하철",82,3,1.1],[2,"도보",66,3,5.0],[2,"버스",83,4,5.4],[3,"도보",87,5,1.4],[3,"버스",67,4,2.2],[2,"지하철",85,3,5.0],[1,"버스",80,3,2.2],[3,"지하철",84,3,3.7],[2,"자전거",94,4,2.8],[2,"버스",73,3,1.6],[1,"버스",68,4,5.8],[3,"도보",67,3,3.4],[3,"지하철",67,4,4.0],[1,"자가용",75,3,2.8],[2,"도보",79,4,2.4],[1,"지하철",78,4,1.6],[2,"도보",84,1,2.4],[2,"버스",76,2,1.3],[2,"도보",90,2,3.5],[3,"지하철",73,2,1.7],[3,"자전거",100,2,2.2],[3,"자가용",82,4,5.0],[1,"자가용",67,3,5.5],[2,"자가용",65,5,2.5],[3,"도보",80,5,1.5],[1,"지하철",73,3,1.4],[1,"도보",83,2,1.0],[2,"지하철",80,3,1.2],[2,"지하철",75,4,3.3],[3,"버스",67,3,5.0],[3,"지하철",60,5,3.1],[3,"도보",71,2,2.3],[1,"도보",84,2,2.5],[3,"자가용",78,5,3.2],[2,"지하철",63,4,5.7],[3,"지하철",77,3,4.0],[2,"자가용",79,4,1.1],[1,"자전거",67,4,3.9],[1,"자전거",77,4,2.3],[1,"자가용",76,2,3.6],[2,"자전거",64,2,3.9]];
+/* ============================================================
+   COLUMN DEFINITIONS
+============================================================ */
+// DATA columns: [0]=grade, [1]=transport, [2]=math, [3]=lunch, [4]=screen
+const COLS = [
+  {key:'grade',   label:'학년',      type:'cat', idx:0, catVals:['1학년','2학년','3학년'], mapFn: v=>`${v}학년`},
+  {key:'transport',label:'교통수단', type:'cat', idx:1, catVals:['도보','버스','지하철','자가용','자전거'], mapFn:v=>v},
+  {key:'math',    label:'수학점수',  type:'num', idx:2},
+  {key:'lunch',   label:'급식만족도',type:'num', idx:3},
+  {key:'screen',  label:'스크린타임',type:'num', idx:4},
+];
+
+const AGG_METHODS = [
+  {key:'avg',label:'평균'},
+  {key:'sum',label:'합계'},
+  {key:'count',label:'개수'},
+  {key:'max',label:'최댓값'},
+  {key:'min',label:'최솟값'},
+];
+
+const CHART_COLORS = ['#5B8BF5','#2ECC71','#F97316','#E74C3C','#8B5CF6','#F1C40F','#1ABC9C','#E91E63'];
+
+/* ============================================================
+   DATA PREVIEW
+============================================================ */
+function buildPreview(){
+  const tb = document.getElementById('preview-tbody');
+  const preview = DATA.slice(0,8);
+  tb.innerHTML = preview.map((r,i)=>`
+    <tr>
+      <td>${r[0]}학년</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td>
+    </tr>`).join('');
+}
+
+/* ============================================================
+   DYNAMIC CONTROLS
+============================================================ */
+const colOptions = COLS.map(c=>`<option value="${c.key}">${c.label} (${c.type==='cat'?'범주':'수치'})</option>`).join('');
+const aggOptions = AGG_METHODS.map(a=>`<option value="${a.key}">${a.label}</option>`).join('');
+
+function onTypeChange(){
+  const t = document.getElementById('sel-type').value;
+  const dc = document.getElementById('dynamic-controls');
+
+  if(t==='bar'||t==='hbar'||t==='line'){
+    dc.innerHTML=`
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px;">
+        <div class="ctrl-group">
+          <div class="ctrl-label">X축 <span style="font-size:11px;color:var(--text-muted)">(범주형)</span></div>
+          <select class="ctrl-select" id="sel-x" onchange="drawChart()">${colOptions}</select>
+        </div>
+        <div class="ctrl-group">
+          <div class="ctrl-label">Y축</div>
+          <select class="ctrl-select" id="sel-y" onchange="drawChart()">${colOptions}</select>
+        </div>
+        <div class="ctrl-group">
+          <div class="ctrl-label">집계 방법</div>
+          <select class="ctrl-select" id="sel-agg" onchange="drawChart()">${aggOptions}</select>
+        </div>
+      </div>`;
+    // defaults
+    document.getElementById('sel-x').value = 'grade';
+    document.getElementById('sel-y').value = 'math';
+    document.getElementById('sel-agg').value = 'avg';
+  } else if(t==='pie'){
+    dc.innerHTML=`
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
+        <div class="ctrl-group">
+          <div class="ctrl-label">데이터 열</div>
+          <select class="ctrl-select" id="sel-pie-col" onchange="drawChart()">${colOptions}</select>
+        </div>
+      </div>`;
+    document.getElementById('sel-pie-col').value = 'transport';
+  } else if(t==='scatter'){
+    dc.innerHTML=`
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
+        <div class="ctrl-group">
+          <div class="ctrl-label">X축 <span style="font-size:11px;color:var(--text-muted)">(수치형)</span></div>
+          <select class="ctrl-select" id="sel-sx" onchange="drawChart()">${colOptions}</select>
+        </div>
+        <div class="ctrl-group">
+          <div class="ctrl-label">Y축</div>
+          <select class="ctrl-select" id="sel-sy" onchange="drawChart()">${colOptions}</select>
+        </div>
+      </div>`;
+    document.getElementById('sel-sx').value = 'screen';
+    document.getElementById('sel-sy').value = 'math';
+  } else if(t==='histogram'){
+    dc.innerHTML=`
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
+        <div class="ctrl-group">
+          <div class="ctrl-label">데이터 열</div>
+          <select class="ctrl-select" id="sel-hist-col" onchange="drawChart()">${colOptions}</select>
+        </div>
+      </div>`;
+    document.getElementById('sel-hist-col').value = 'math';
+  }
+
+  drawChart();
+}
+
+/* ============================================================
+   AGGREGATION HELPER
+============================================================ */
+function getColInfo(key){ return COLS.find(c=>c.key===key); }
+
+function aggregate(groupBy, valueKey, aggKey){
+  const gCol = getColInfo(groupBy);
+  const vCol = getColInfo(valueKey);
+
+  // Build groups
+  const groups = {};
+  DATA.forEach(row=>{
+    const gRaw = row[gCol.idx];
+    const gLabel = gCol.mapFn ? gCol.mapFn(gRaw) : String(gRaw);
+    const val = row[vCol.idx];
+    if(!groups[gLabel]) groups[gLabel] = [];
+    groups[gLabel].push(typeof val === 'string' ? 1 : Number(val));
+  });
+
+  // Determine category order
+  let labels;
+  if(gCol.catVals) {
+    labels = gCol.catVals.map(v=> gCol.mapFn ? gCol.mapFn(v) : v).filter(v=>groups[v]!==undefined);
+    Object.keys(groups).forEach(k=>{ if(!labels.includes(k)) labels.push(k); });
+  } else {
+    labels = Object.keys(groups).sort((a,b)=>Number(a)-Number(b));
+  }
+
+  const values = labels.map(label=>{
+    const arr = groups[label] || [];
+    if(!arr.length) return 0;
+    switch(aggKey){
+      case 'avg': return +(arr.reduce((s,v)=>s+v,0)/arr.length).toFixed(2);
+      case 'sum': return arr.reduce((s,v)=>s+v,0);
+      case 'count': return arr.length;
+      case 'max': return Math.max(...arr);
+      case 'min': return Math.min(...arr);
+      default: return 0;
+    }
+  });
+
+  return {labels, values};
+}
+
+function aggregateCat(colKey){
+  const col = getColInfo(colKey);
+  const counts = {};
+  DATA.forEach(row=>{
+    const raw = row[col.idx];
+    const label = col.mapFn ? col.mapFn(raw) : String(raw);
+    counts[label] = (counts[label]||0) + 1;
+  });
+  let labels;
+  if(col.catVals){
+    labels = col.catVals.map(v=> col.mapFn ? col.mapFn(v) : v).filter(v=>counts[v]);
+    Object.keys(counts).forEach(k=>{ if(!labels.includes(k)) labels.push(k); });
+  } else {
+    labels = Object.keys(counts).sort((a,b)=>counts[b]-counts[a]);
+  }
+  return {labels, values: labels.map(l=>counts[l]||0)};
+}
+
+/* ============================================================
+   CANVAS DRAWING
+============================================================ */
+let lastRAF = null;
+function drawChart(){
+  if(lastRAF) cancelAnimationFrame(lastRAF);
+  lastRAF = requestAnimationFrame(_drawChart);
+}
+
+function _drawChart(){
+  const type = document.getElementById('sel-type').value;
+  const titleVal = (document.getElementById('chart-title')||{}).value || '';
+
+  const area = document.getElementById('chart-area');
+  area.innerHTML = '<canvas id="main-canvas"></canvas>';
+  const canvas = document.getElementById('main-canvas');
+
+  const dpr = devicePixelRatio||1;
+  const W = Math.max(area.clientWidth - 40, 400);
+  const H = 280;
+  canvas.width = W*dpr; canvas.height = H*dpr;
+  canvas.style.width = W+'px'; canvas.style.height = H+'px';
+  const ctx = canvas.getContext('2d'); ctx.scale(dpr,dpr);
+
+  const PAD = {top: titleVal ? 36 : 20, right:20, bottom:48, left:56};
+
+  if(titleVal){
+    ctx.fillStyle='#1A1F36'; ctx.font='bold 14px Noto Sans KR'; ctx.textAlign='center';
+    ctx.fillText(titleVal, W/2, 22);
+  }
+
+  let statusText = '';
+
+  if(type==='bar'||type==='hbar'||type==='line'){
+    const xKey = (document.getElementById('sel-x')||{}).value||'grade';
+    const yKey = (document.getElementById('sel-y')||{}).value||'math';
+    const aggKey = (document.getElementById('sel-agg')||{}).value||'avg';
+    const xCol = getColInfo(xKey); const yCol = getColInfo(yKey);
+    const aggLabel = AGG_METHODS.find(a=>a.key===aggKey)?.label||'';
+
+    let {labels, values} = aggregate(xKey, yKey, aggKey);
+
+    statusText = `${type==='bar'?'막대 차트':type==='hbar'?'가로 막대 차트':'꺾은선 차트'} | X축: ${xCol.label} | Y축: ${yCol.label} | 집계: ${aggLabel}`;
+
+    if(type==='hbar'){
+      drawHBar(ctx, W, H, PAD, labels, values);
+    } else if(type==='line'){
+      drawLineChart(ctx, W, H, PAD, labels, values);
+    } else {
+      drawBarChart(ctx, W, H, PAD, labels, values);
+    }
+
+  } else if(type==='pie'){
+    const colKey = (document.getElementById('sel-pie-col')||{}).value||'transport';
+    const col = getColInfo(colKey);
+    let {labels, values} = aggregateCat(colKey);
+    statusText = `원형 차트 | 데이터 열: ${col.label}`;
+    drawPieChart(ctx, W, H, labels, values, titleVal);
+
+  } else if(type==='scatter'){
+    const xKey = (document.getElementById('sel-sx')||{}).value||'screen';
+    const yKey = (document.getElementById('sel-sy')||{}).value||'math';
+    const xCol = getColInfo(xKey); const yCol = getColInfo(yKey);
+    statusText = `산점도 | X축: ${xCol.label} | Y축: ${yCol.label}`;
+    const pts = DATA.map(r=>[Number(r[xCol.idx]), Number(r[yCol.idx])]);
+    drawScatter(ctx, W, H, PAD, pts, xCol.label, yCol.label);
+
+  } else if(type==='histogram'){
+    const colKey = (document.getElementById('sel-hist-col')||{}).value||'math';
+    const col = getColInfo(colKey);
+    statusText = `히스토그램 | 데이터 열: ${col.label}`;
+    const vals = DATA.map(r=>Number(r[col.idx]));
+    drawHistogram(ctx, W, H, PAD, vals, col.label);
+  }
+
+  document.getElementById('chart-status').textContent = statusText;
+}
+
+/* ========= BAR ========= */
+function drawBarChart(ctx, W, H, PAD, labels, values){
+  const cW=W-PAD.left-PAD.right, cH=H-PAD.top-PAD.bottom;
+  const minV=0, maxV=Math.max(...values)*1.15||10;
+  const toY=v=>PAD.top+cH-(v/maxV)*cH;
+
+  // grid
+  const step = niceStep(maxV, 5);
+  for(let v=0; v<=maxV+0.01; v+=step){
+    const y=toY(v);
+    ctx.strokeStyle='#E4E9F2'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(PAD.left,y); ctx.lineTo(PAD.left+cW,y); ctx.stroke();
+    ctx.fillStyle='#9AA5B4'; ctx.font='11px Noto Sans KR'; ctx.textAlign='right';
+    ctx.fillText(v%1===0?v:v.toFixed(1), PAD.left-5, y+4);
+  }
+
+  const gap=cW/labels.length, bW=Math.min(gap*0.6, 60);
+  labels.forEach((lbl,i)=>{
+    const x=PAD.left+gap*i+(gap-bW)/2, bH=(values[i]/maxV)*cH;
+    ctx.fillStyle=CHART_COLORS[i%CHART_COLORS.length];
+    ctx.beginPath(); ctx.roundRect(x,toY(values[i]),bW,bH,[4,4,0,0]); ctx.fill();
+    // value label
+    ctx.fillStyle='#1A1F36'; ctx.font='11px Noto Sans KR'; ctx.textAlign='center';
+    ctx.fillText(values[i]%1===0?values[i]:values[i].toFixed(1), x+bW/2, toY(values[i])-5);
+    // x label
+    ctx.fillStyle='#4A5568'; ctx.font='12px Noto Sans KR';
+    const lx=x+bW/2, ly=PAD.top+cH+20;
+    if(lbl.length>5){ ctx.save(); ctx.translate(lx,ly); ctx.rotate(-0.4); ctx.textAlign='right'; ctx.fillText(lbl,0,0); ctx.restore(); }
+    else{ ctx.textAlign='center'; ctx.fillText(lbl,lx,ly); }
+  });
+
+  axes(ctx, W, H, PAD);
+}
+
+/* ========= HBAR ========= */
+function drawHBar(ctx, W, H, PAD, labels, values){
+  const PAD2={top:PAD.top, right:60, bottom:PAD.bottom, left:80};
+  const cW=W-PAD2.left-PAD2.right, cH=H-PAD2.top-PAD2.bottom;
+  const maxV=Math.max(...values)*1.15||10;
+  const barH=Math.min((cH/labels.length)*0.55, 36);
+  const gap=cH/labels.length;
+
+  const step=niceStep(maxV,5);
+  for(let v=0;v<=maxV+0.01;v+=step){
+    const x=PAD2.left+(v/maxV)*cW;
+    ctx.strokeStyle='#E4E9F2'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(x,PAD2.top); ctx.lineTo(x,PAD2.top+cH); ctx.stroke();
+    ctx.fillStyle='#9AA5B4'; ctx.font='11px Noto Sans KR'; ctx.textAlign='center';
+    ctx.fillText(v%1===0?v:v.toFixed(1), x, PAD2.top+cH+16);
+  }
+
+  labels.forEach((lbl,i)=>{
+    const y=PAD2.top+gap*i+(gap-barH)/2;
+    const bW=(values[i]/maxV)*cW;
+    ctx.fillStyle=CHART_COLORS[i%CHART_COLORS.length];
+    ctx.beginPath(); ctx.roundRect(PAD2.left,y,bW,barH,[0,4,4,0]); ctx.fill();
+    // label
+    ctx.fillStyle='#4A5568'; ctx.font='12px Noto Sans KR'; ctx.textAlign='right';
+    ctx.fillText(lbl, PAD2.left-6, y+barH/2+4);
+    // value
+    ctx.fillStyle='#1A1F36'; ctx.font='11px Noto Sans KR'; ctx.textAlign='left';
+    ctx.fillText(values[i]%1===0?values[i]:values[i].toFixed(1), PAD2.left+bW+5, y+barH/2+4);
+  });
+
+  ctx.strokeStyle='#CBD5E0'; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.moveTo(PAD2.left,PAD2.top); ctx.lineTo(PAD2.left,PAD2.top+cH); ctx.lineTo(PAD2.left+cW,PAD2.top+cH); ctx.stroke();
+}
+
+/* ========= LINE ========= */
+function drawLineChart(ctx, W, H, PAD, labels, values){
+  const cW=W-PAD.left-PAD.right, cH=H-PAD.top-PAD.bottom;
+  const minV=Math.min(...values)*0.92, maxV=Math.max(...values)*1.08||10;
+  const n=labels.length;
+  const toC=(i,v)=>[PAD.left+(i/(n-1||1))*cW, PAD.top+(1-(v-minV)/(maxV-minV||1))*cH];
+
+  const step=niceStep(maxV-minV,5);
+  for(let v=Math.ceil(minV/step)*step; v<=maxV+0.01; v+=step){
+    const y=PAD.top+(1-(v-minV)/(maxV-minV||1))*cH;
+    ctx.strokeStyle='#E4E9F2'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(PAD.left,y); ctx.lineTo(PAD.left+cW,y); ctx.stroke();
+    ctx.fillStyle='#9AA5B4'; ctx.font='11px Noto Sans KR'; ctx.textAlign='right';
+    ctx.fillText(v%1===0?v:v.toFixed(1), PAD.left-5, y+4);
+  }
+
+  // area
+  ctx.beginPath();
+  values.forEach((v,i)=>{const[x,y]=toC(i,v); i?ctx.lineTo(x,y):ctx.moveTo(x,y);});
+  ctx.lineTo(toC(n-1,values[n-1])[0], PAD.top+cH); ctx.lineTo(PAD.left,PAD.top+cH); ctx.closePath();
+  const g=ctx.createLinearGradient(0,PAD.top,0,PAD.top+cH);
+  g.addColorStop(0,'rgba(59,111,232,0.15)'); g.addColorStop(1,'rgba(59,111,232,0.01)');
+  ctx.fillStyle=g; ctx.fill();
+
+  ctx.beginPath();
+  values.forEach((v,i)=>{const[x,y]=toC(i,v); i?ctx.lineTo(x,y):ctx.moveTo(x,y);});
+  ctx.strokeStyle='#3B6FE8'; ctx.lineWidth=2.5; ctx.lineJoin='round'; ctx.stroke();
+
+  values.forEach((v,i)=>{
+    const[x,y]=toC(i,v);
+    ctx.beginPath(); ctx.arc(x,y,4.5,0,Math.PI*2);
+    ctx.fillStyle='#3B6FE8'; ctx.fill(); ctx.strokeStyle='white'; ctx.lineWidth=1.5; ctx.stroke();
+    const lbl=labels[i]; const lx=x, ly=PAD.top+cH+20;
+    ctx.fillStyle='#4A5568'; ctx.font='12px Noto Sans KR';
+    if(lbl.length>5){ ctx.save(); ctx.translate(lx,ly); ctx.rotate(-0.4); ctx.textAlign='right'; ctx.fillText(lbl,0,0); ctx.restore(); }
+    else{ ctx.textAlign='center'; ctx.fillText(lbl,lx,ly); }
+  });
+
+  axes(ctx,W,H,PAD);
+}
+
+/* ========= PIE ========= */
+function drawPieChart(ctx, W, H, labels, values, title){
+  const total=values.reduce((s,v)=>s+v,0);
+  const cx=W*0.42, cy=(H+(title?16:0))/2, r=Math.min(cy-(title?26:16), cx-60)*0.82;
+  let ang=-Math.PI/2;
+  values.forEach((v,i)=>{
+    const sweep=(v/total)*2*Math.PI;
+    ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,r,ang,ang+sweep); ctx.closePath();
+    ctx.fillStyle=CHART_COLORS[i%CHART_COLORS.length]; ctx.fill();
+    ctx.strokeStyle='white'; ctx.lineWidth=2; ctx.stroke();
+    const mid=ang+sweep/2;
+    const pct=((v/total)*100).toFixed(1)+'%';
+    if(sweep>0.25){
+      ctx.fillStyle='white'; ctx.font='bold 12px Noto Sans KR'; ctx.textAlign='center';
+      ctx.fillText(pct, cx+Math.cos(mid)*r*0.65, cy+Math.sin(mid)*r*0.65+4);
+    }
+    ang+=sweep;
+  });
+  // legend
+  const lx=cx+r+18;
+  labels.forEach((l,i)=>{
+    const ly=cy-labels.length*13+i*28;
+    ctx.fillStyle=CHART_COLORS[i%CHART_COLORS.length]; ctx.fillRect(lx,ly-10,12,12);
+    ctx.fillStyle='#4A5568'; ctx.font='12px Noto Sans KR'; ctx.textAlign='left';
+    ctx.fillText(`${l} (${values[i]}명)`, lx+16, ly);
+  });
+}
+
+/* ========= SCATTER ========= */
+function drawScatter(ctx, W, H, PAD, pts, xLabel, yLabel){
+  const cW=W-PAD.left-PAD.right, cH=H-PAD.top-PAD.bottom;
+  const xs=pts.map(p=>p[0]), ys=pts.map(p=>p[1]);
+  const xRange=Math.max(...xs)-Math.min(...xs)||1, yRange=Math.max(...ys)-Math.min(...ys)||1;
+  const xMin=Math.min(...xs)-xRange*0.06, xMax=Math.max(...xs)+xRange*0.06;
+  const yMin=Math.min(...ys)-yRange*0.06, yMax=Math.max(...ys)+yRange*0.06;
+  const toC=(x,y)=>[PAD.left+(x-xMin)/(xMax-xMin)*cW, PAD.top+(1-(y-yMin)/(yMax-yMin))*cH];
+
+  const xStep=niceStep(xMax-xMin,5), yStep=niceStep(yMax-yMin,5);
+  for(let v=Math.ceil(xMin/xStep)*xStep; v<=xMax+0.01; v+=xStep){
+    const[cx]=toC(v,0);
+    ctx.strokeStyle='#E4E9F2'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(cx,PAD.top); ctx.lineTo(cx,PAD.top+cH); ctx.stroke();
+    ctx.fillStyle='#9AA5B4'; ctx.font='11px Noto Sans KR'; ctx.textAlign='center';
+    ctx.fillText(v%1===0?v:v.toFixed(1), cx, PAD.top+cH+18);
+  }
+  for(let v=Math.ceil(yMin/yStep)*yStep; v<=yMax+0.01; v+=yStep){
+    const[,cy]=toC(0,v);
+    ctx.strokeStyle='#E4E9F2'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(PAD.left,cy); ctx.lineTo(PAD.left+cW,cy); ctx.stroke();
+    ctx.fillStyle='#9AA5B4'; ctx.font='11px Noto Sans KR'; ctx.textAlign='right';
+    ctx.fillText(v%1===0?v:v.toFixed(1), PAD.left-5, cy+4);
+  }
+
+  // trend line
+  const n=pts.length, mx=xs.reduce((a,b)=>a+b)/n, my=ys.reduce((a,b)=>a+b)/n;
+  const b=pts.reduce((s,p)=>s+(p[0]-mx)*(p[1]-my),0)/pts.reduce((s,p)=>s+(p[0]-mx)**2,1);
+  const a=my-b*mx;
+  const[tx1,ty1]=toC(xMin+xRange*0.02,a+b*(xMin+xRange*0.02));
+  const[tx2,ty2]=toC(xMax-xRange*0.02,a+b*(xMax-xRange*0.02));
+  ctx.strokeStyle='rgba(231,76,60,0.5)'; ctx.lineWidth=1.8; ctx.setLineDash([5,4]);
+  ctx.beginPath(); ctx.moveTo(tx1,ty1); ctx.lineTo(tx2,ty2); ctx.stroke(); ctx.setLineDash([]);
+
+  pts.forEach(([x,y])=>{
+    const[cx,cy]=toC(x,y);
+    ctx.beginPath(); ctx.arc(cx,cy,3.5,0,Math.PI*2);
+    ctx.fillStyle='rgba(59,111,232,0.55)'; ctx.fill();
+  });
+
+  // axis labels
+  ctx.fillStyle='#4A5568'; ctx.font='12px Noto Sans KR'; ctx.textAlign='center';
+  ctx.fillText(xLabel, PAD.left+cW/2, H-4);
+  ctx.save(); ctx.translate(14, PAD.top+cH/2); ctx.rotate(-Math.PI/2);
+  ctx.textAlign='center'; ctx.fillText(yLabel, 0, 0); ctx.restore();
+
+  axes(ctx,W,H,PAD);
+}
+
+/* ========= HISTOGRAM ========= */
+function drawHistogram(ctx, W, H, PAD, vals, colLabel){
+  const cW=W-PAD.left-PAD.right, cH=H-PAD.top-PAD.bottom;
+  const minV=Math.min(...vals), maxV=Math.max(...vals);
+  const binCount=8;
+  const binW=(maxV-minV)/binCount;
+  const bins=Array(binCount).fill(0);
+  vals.forEach(v=>{
+    let i=Math.floor((v-minV)/binW);
+    if(i===binCount) i=binCount-1;
+    bins[i]++;
+  });
+  const maxBin=Math.max(...bins)*1.15||1;
+  const toY=v=>PAD.top+cH-(v/maxBin)*cH;
+  const step=niceStep(maxBin,5);
+  for(let v=0;v<=maxBin+0.01;v+=step){
+    const y=toY(v);
+    ctx.strokeStyle='#E4E9F2'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(PAD.left,y); ctx.lineTo(PAD.left+cW,y); ctx.stroke();
+    ctx.fillStyle='#9AA5B4'; ctx.font='11px Noto Sans KR'; ctx.textAlign='right';
+    ctx.fillText(v, PAD.left-5, y+4);
+  }
+  const bW=cW/binCount;
+  bins.forEach((cnt,i)=>{
+    const x=PAD.left+bW*i, bH=(cnt/maxBin)*cH;
+    ctx.fillStyle='rgba(139,92,246,0.72)'; ctx.fillRect(x+1,toY(cnt),bW-2,bH);
+    ctx.strokeStyle='white'; ctx.lineWidth=1.5; ctx.strokeRect(x+1,toY(cnt),bW-2,bH);
+    const lbl=`${(minV+binW*i).toFixed(0)}~${(minV+binW*(i+1)).toFixed(0)}`;
+    ctx.fillStyle='#4A5568'; ctx.font='10px Noto Sans KR'; ctx.textAlign='center';
+    ctx.save(); ctx.translate(x+bW/2, PAD.top+cH+20); ctx.rotate(-0.35);
+    ctx.fillText(lbl, 0, 0); ctx.restore();
+  });
+  ctx.fillStyle='#4A5568'; ctx.font='12px Noto Sans KR'; ctx.textAlign='center';
+  ctx.fillText(colLabel, PAD.left+cW/2, H-2);
+  axes(ctx,W,H,PAD);
+}
+
+/* ========= AXES ========= */
+function axes(ctx,W,H,PAD){
+  ctx.strokeStyle='#CBD5E0'; ctx.lineWidth=1.5;
+  ctx.beginPath();
+  ctx.moveTo(PAD.left,PAD.top);
+  ctx.lineTo(PAD.left,PAD.top+(H-PAD.top-PAD.bottom));
+  ctx.lineTo(PAD.left+(W-PAD.left-PAD.right),PAD.top+(H-PAD.top-PAD.bottom));
+  ctx.stroke();
+}
+
+function niceStep(range, targetCount){
+  const rough=range/targetCount;
+  const mag=Math.pow(10,Math.floor(Math.log10(rough)));
+  const steps=[1,2,5,10];
+  for(const s of steps) if(s*mag>=rough) return s*mag;
+  return mag*10;
+}
+
+/* ============================================================
+   UI HELPERS
+============================================================ */
+function togglePractice(header){
+  const body=header.nextElementSibling;
+  const tog=header.querySelector('.practice-toggle');
+  const open=body.style.display!=='none';
+  body.style.display=open?'none':'block';
+  tog.textContent=open?'▼ 펼치기':'▲ 접기';
+}
+
+function toggleAns(btn){
+  const ans=btn.nextElementSibling;
+  const open=ans.style.display==='block';
+  ans.style.display=open?'none':'block';
+  btn.textContent=open?'정답 보기':'정답 숨기기';
+}
+
+/* ============================================================
+   INIT
+============================================================ */
+window.addEventListener('load',function(){
+  buildPreview();
+  onTypeChange();
+});
+</script>
+</body>
+</html>
